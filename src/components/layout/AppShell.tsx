@@ -10,6 +10,7 @@ import {
   Orbit,
   Rocket,
   Sparkles,
+  Settings,
   Telescope,
   X,
 } from 'lucide-react'
@@ -19,7 +20,9 @@ export const REPOSITORY_URL = 'https://github.com/NStein514/DevOrbit'
 export function AppShell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const { pathname } = useLocation()
-  const isBoard = pathname !== '/'
+  const isBoard = pathname === '/boards' || pathname.startsWith('/projects/')
+  const isSettings = pathname === '/settings'
+  const isOverview = pathname === '/'
   const { workspace } = useWorkspace()
   return (
     <div className="app-shell">
@@ -59,13 +62,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           <p className="nav-label">WORKSPACE</p>
           <nav aria-label="Main navigation" onClick={() => setMenuOpen(false)}>
             <Link
-              className={`nav-link ${!isBoard ? 'active' : ''}`}
+              className={`nav-link ${isOverview ? 'active' : ''}`}
               to="/"
-              aria-current={!isBoard ? 'page' : undefined}
+              aria-current={isOverview ? 'page' : undefined}
             >
               <LayoutDashboard size={18} />
               Overview
-              <span className="nav-active-dot" />
+              {isOverview && <span className="nav-active-dot" />}
             </Link>
             <Link className="nav-link" to="/#projects">
               <Rocket size={18} />
@@ -84,6 +87,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Telescope size={18} />
               On the horizon
               <ArrowUpRight size={14} className="nav-end" />
+            </Link>
+            <Link
+              className={`nav-link ${isSettings ? 'active' : ''}`}
+              to="/settings"
+              aria-current={isSettings ? 'page' : undefined}
+            >
+              <Settings size={18} />
+              Settings{isSettings && <span className="nav-active-dot" />}
             </Link>
           </nav>
           <div className="sidebar-bottom">
@@ -118,7 +129,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="topbar">
           <div className="breadcrumb">
             Workspace<span>/</span>
-            <strong>{isBoard ? 'Kanban boards' : 'Overview'}</strong>
+            <strong>
+              {isSettings ? 'Settings' : isBoard ? 'Kanban boards' : 'Overview'}
+            </strong>
           </div>
           <div className="topbar-right">
             <span className="personal-label">

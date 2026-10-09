@@ -1,0 +1,105 @@
+:root {
+  --accent: #c0f2ad;
+  --accent-light-text: #416333;
+  --accent-solid: #6c9557;
+  --planet-hue: 60deg;
+  /* Normalize the original hues so highlights and shadows share the accent. */
+  --planet-filter: grayscale(1) sepia(1) saturate(2)
+    hue-rotate(var(--planet-hue));
+  --accent-ink: #182028;
+  --accent-hover: color-mix(in srgb, var(--accent) 78%, white);
+  --accent-text: var(--accent-light-text);
+  --accent-mark: var(--accent-solid);
+  --accent-soft: color-mix(in srgb, var(--accent) 23%, var(--surface));
+  --accent-border: color-mix(in srgb, var(--accent-solid) 40%, var(--border));
+  --focus: var(--accent-solid);
+  --page: color-mix(in srgb, var(--accent) 3%, #f7f8f9);
+  --surface: #ffffff;
+  --surface-raised: #fcfdfb;
+  --surface-subtle: color-mix(in srgb, var(--accent) 8%, #f1f3f2);
+  --text: #222b27;
+  --muted: #626d67;
+  --border: color-mix(in srgb, var(--accent) 12%, #dce1de);
+  --border-subtle: color-mix(in srgb, var(--border) 60%, var(--surface));
+  --shadow-soft: #1018200c;
+  --shadow: #10182022;
+  --shadow-modal: #070c1440;
+  --backdrop: #080e17ab;
+  --danger: #a64040;
+  --danger-hover: #853030;
+  --danger-text: #a33d3d;
+  --danger-soft: #f9e8e8;
+  --warning-text: #815c1e;
+  --warning-soft: #fbf0da;
+  --warning-border: #dcc595;
+  --info-text: #3a6c9b;
+  --purple-text: #806297;
+  --purple-soft: #efe9f6;
+  --orange-text: #926338;
+  --orange-soft: #faf0e5;
+  --on-space: #f6f8fc;
+  --space-muted: #c0c8d3;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --page: #111418;
+  --surface: #1b2026;
+  --surface-raised: #1e242c;
+  --surface-subtle: #242b33;
+  --text: #e8ecf1;
+  --muted: #adb7c2;
+  --border: #38424d;
+  --border-subtle: #2d353f;
+  --accent-text: var(--accent);
+  --accent-mark: var(--accent);
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  --accent-border: color-mix(in srgb, var(--accent) 38%, var(--border));
+  --focus: var(--accent);
+  --shadow-soft: #00000020;
+  --shadow: #00000040;
+  --shadow-modal: #00000080;
+  --backdrop: #05080dba;
+  --danger-text: #f1a5a5;
+  --danger-soft: #38272d;
+  --warning-text: #efcd8c;
+  --warning-soft: #342f24;
+  --warning-border: #665538;
+  --info-text: #9ac4f1;
+  --purple-text: #cfb0ec;
+  --purple-soft: #332b40;
+  --orange-text: #efbd8d;
+  --orange-soft: #3b3028;
+  color-scheme: dark;
+}
+
+/* Preserve explicit workflow colors while adapting their surfaces to the theme. */
+:root[data-theme='dark'] .board-column:not(.color-sage),
+:root[data-theme='dark'] .color-option:not(.color-sage) {
+  --column-soft: color-mix(in srgb, var(--column-color) 18%, var(--surface));
+}
+
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+input,
+select,
+textarea {
+  accent-color: var(--accent-mark);
+}
+option {
+  color: var(--text);
+  background: var(--surface);
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}

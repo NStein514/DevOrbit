@@ -62,7 +62,7 @@ export function ColumnEditor({
                 onChange={() => setColor(item)}
               />
               <span />
-              {item}
+              {item === 'sage' ? 'Theme accent' : item}
             </label>
           ))}
         </fieldset>

@@ -11,35 +11,40 @@ import { useEffect } from 'react'
 import { WorkspaceProvider } from '../features/workspace/WorkspaceProvider'
 import { WorkspaceNotice } from '../features/workspace/WorkspaceNotice'
 import { BoardLanding, KanbanPage } from '../features/kanban/KanbanPage'
+import { AppearanceProvider } from '../features/settings/AppearanceProvider'
+import { SettingsPage } from '../features/settings/SettingsPage'
 
 export function App() {
   return (
     <BrowserRouter>
-      <WorkspaceProvider>
-        <ScrollToLocation />
-        <AppShell>
-          <WorkspaceNotice />
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/boards" element={<BoardLanding />} />
-            <Route
-              path="/projects/:projectId/boards/:boardId"
-              element={<KanbanPage />}
-            />
-            <Route
-              path="*"
-              element={
-                <div className="board-not-found">
-                  <h1>Lost in space?</h1>
-                  <Link className="button button--primary" to="/">
-                    Back to mission control
-                  </Link>
-                </div>
-              }
-            />
-          </Routes>
-        </AppShell>
-      </WorkspaceProvider>
+      <AppearanceProvider>
+        <WorkspaceProvider>
+          <ScrollToLocation />
+          <AppShell>
+            <WorkspaceNotice />
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/boards" element={<BoardLanding />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route
+                path="/projects/:projectId/boards/:boardId"
+                element={<KanbanPage />}
+              />
+              <Route
+                path="*"
+                element={
+                  <div className="board-not-found">
+                    <h1>Lost in space?</h1>
+                    <Link className="button button--primary" to="/">
+                      Back to mission control
+                    </Link>
+                  </div>
+                }
+              />
+            </Routes>
+          </AppShell>
+        </WorkspaceProvider>
+      </AppearanceProvider>
     </BrowserRouter>
   )
 }
