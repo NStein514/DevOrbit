@@ -12,6 +12,7 @@ import { WorkspaceProvider } from '../features/workspace/WorkspaceProvider'
 import { WorkspaceNotice } from '../features/workspace/WorkspaceNotice'
 import { BoardLanding, KanbanPage } from '../features/kanban/KanbanPage'
 import { AppearanceProvider } from '../features/settings/AppearanceProvider'
+import { BugLanding, BugPage } from '../features/bugs/BugPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 
 export function App() {
@@ -25,6 +26,12 @@ export function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/boards" element={<BoardLanding />} />
+              <Route path="/bugs" element={<BugLanding />} />
+              <Route path="/projects/:projectId/bugs" element={<BugPage />} />
+              <Route
+                path="/projects/:projectId/bugs/:bugId"
+                element={<BugPage />}
+              />
               <Route path="/settings" element={<SettingsPage />} />
               <Route
                 path="/projects/:projectId/boards/:boardId"

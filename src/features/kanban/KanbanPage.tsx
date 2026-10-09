@@ -34,6 +34,7 @@ import {
 import { useWorkspace } from '../workspace/context'
 import {
   boardPath,
+  bugsPath,
   createBoard,
   downloadWorkspace,
   moveTask,
@@ -295,6 +296,9 @@ function BoardView({ projectId, board }: { projectId: string; board: Board }) {
           <FolderPlus size={14} />
           New project
         </button>
+        <Link to={bugsPath(project)} className="text-link bug-board-link">
+          Bug tracking
+        </Link>
       </div>
       <div className="board-heading">
         <div>
@@ -699,6 +703,7 @@ function BoardView({ projectId, board }: { projectId: string; board: Board }) {
               name,
               description,
               boards: [createBoard()],
+              bugs: [],
             }
             const saved = update((current) => ({
               ...current,
@@ -761,8 +766,8 @@ function BoardView({ projectId, board }: { projectId: string; board: Board }) {
           }}
         >
           <p>
-            Delete “{project.name}” with all of its boards and tasks? This
-            cannot be undone.
+            Delete “{project.name}” with all of its boards, tasks, and bug
+            reports? This cannot be undone.
           </p>
         </ConfirmDialog>
       )}

@@ -1,12 +1,5 @@
 export const roadmap = [
   {
-    id: 'bugs',
-    title: 'Bug tracking',
-    description:
-      'Capture issues with severity, reproduction steps, and project context, so fixes stay connected to the work.',
-    caption: 'Keep the small things from drifting.',
-  },
-  {
     id: 'milestones',
     title: 'Milestones',
     description:

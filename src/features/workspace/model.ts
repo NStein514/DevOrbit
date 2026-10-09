@@ -15,6 +15,34 @@ const id = z
   .min(1)
   .max(100)
   .regex(/^[a-zA-Z0-9_-]+$/)
+export const bugStatuses = [
+  'open',
+  'in-progress',
+  'resolved',
+  'closed',
+] as const
+export const bugSeverities = ['low', 'medium', 'high', 'critical'] as const
+export const bugSchema = z.object({
+  id,
+  title: name,
+  description: z.string().max(10000),
+  status: z.enum(bugStatuses),
+  severity: z.enum(bugSeverities),
+  steps: z.string().max(10000),
+  expected: z.string().max(10000),
+  actual: z.string().max(10000),
+  environment: z.string().max(1000),
+  labels: z.array(z.string().trim().min(1).max(30)).max(12),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+})
+export type BugReport = z.infer<typeof bugSchema>
+export type BugDraft = Omit<BugReport, 'id' | 'createdAt' | 'updatedAt'>
+export const isActiveBug = (bug: BugReport) =>
+  bug.status === 'open' || bug.status === 'in-progress'
+export const bugsPath = (project: { id: string }) =>
+  `/projects/${project.id}/bugs`
+
 export const taskSchema = z.object({
   id,
   title: name,
@@ -41,6 +69,8 @@ export const projectSchema = z.object({
   id,
   name,
   description: z.string().max(1000),
+  // Older version 1 workspaces did not have bug reports.
+  bugs: z.array(bugSchema).max(1000).default([]),
   boards: z.array(boardSchema).min(1).max(30),
 })
 export const workspaceSchema = z
@@ -60,6 +90,7 @@ export const workspaceSchema = z
     }
     workspace.projects.forEach((project) => {
       unique(project.id)
+      project.bugs.forEach((bug) => unique(bug.id))
       project.boards.forEach((board) => {
         unique(board.id)
         board.columns.forEach((column) => {
@@ -129,6 +160,7 @@ export function createWorkspace(): Workspace {
         name: 'DevOrbit',
         description: 'A calmer mission control for side projects.',
         boards: [board],
+        bugs: [],
       },
     ],
   }

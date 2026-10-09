@@ -4,6 +4,7 @@ import { useWorkspace } from '../../features/workspace/context'
 import {
   ArrowUpRight,
   Github,
+  Bug,
   LayoutDashboard,
   Layers3,
   Menu,
@@ -20,7 +21,10 @@ export const REPOSITORY_URL = 'https://github.com/NStein514/DevOrbit'
 export function AppShell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const { pathname } = useLocation()
-  const isBoard = pathname === '/boards' || pathname.startsWith('/projects/')
+  const isBoard =
+    pathname === '/boards' || /^\/projects\/[^/]+\/boards\//.test(pathname)
+  const isBugs =
+    pathname === '/bugs' || /^\/projects\/[^/]+\/bugs(?:\/|$)/.test(pathname)
   const isSettings = pathname === '/settings'
   const isOverview = pathname === '/'
   const { workspace } = useWorkspace()
@@ -83,6 +87,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Layers3 size={18} />
               Kanban boards
             </Link>
+            <Link
+              className={`nav-link ${isBugs ? 'active' : ''}`}
+              to="/bugs"
+              aria-current={isBugs ? 'page' : undefined}
+            >
+              <Bug size={18} /> Bug tracking
+            </Link>
             <Link className="nav-link" to="/#roadmap">
               <Telescope size={18} />
               On the horizon
@@ -130,7 +141,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="breadcrumb">
             Workspace<span>/</span>
             <strong>
-              {isSettings ? 'Settings' : isBoard ? 'Kanban boards' : 'Overview'}
+              {isSettings
+                ? 'Settings'
+                : isBugs
+                  ? 'Bug tracking'
+                  : isBoard
+                    ? 'Kanban boards'
+                    : 'Overview'}
             </strong>
           </div>
           <div className="topbar-right">

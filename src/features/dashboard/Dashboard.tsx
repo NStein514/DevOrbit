@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useWorkspace } from '../workspace/context'
-import { boardPath, createBoard, newId } from '../workspace/model'
+import { boardPath, createBoard, isActiveBug, newId } from '../workspace/model'
 import { EntityEditor } from '../workspace/WorkspaceDialogs'
 import {
   ArrowDown,
@@ -27,7 +27,7 @@ import { roadmap } from './data'
 import { ProjectCard } from './ProjectCard'
 import type { Project, ProjectStatus } from './types'
 
-const roadmapIcons = [Bug, Flag, GitBranch, Sparkles]
+const roadmapIcons = [Flag, GitBranch, Sparkles]
 type Filter = 'All projects' | ProjectStatus
 
 export function Dashboard() {
@@ -244,6 +244,24 @@ export function Dashboard() {
             : 'No projects in this orbit. Try another search or filter.'}
         </p>
       </section>
+      <section className="dashboard-bugs" aria-label="Bug tracking summary">
+        <span className="bug-stat-icon">
+          <Bug size={20} />
+        </span>
+        <div>
+          <h2>Keep the unexpected in sight.</h2>
+          <p>
+            {workspace.projects.reduce(
+              (sum, project) => sum + project.bugs.filter(isActiveBug).length,
+              0,
+            )}{' '}
+            active bugs across your projects.
+          </p>
+        </div>
+        <Link className="text-link" to="/bugs">
+          Open bug tracking <ArrowUpRight size={15} />
+        </Link>
+      </section>
       <div className="lower-grid">
         <section className="focus-panel" aria-labelledby="focus-title">
           <div className="panel-eyebrow">
@@ -341,6 +359,7 @@ export function Dashboard() {
               name,
               description,
               boards: [createBoard()],
+              bugs: [],
             }
             const saved = update((current) => ({
               ...current,

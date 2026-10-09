@@ -4,11 +4,11 @@ A calmer mission control for individual developers and their side projects. A sp
 
 ## Current scope
 
-DevOrbit includes a responsive homepage, personalization settings, and a customizable Kanban workspace built with React, TypeScript, and Vite. The homepage shows real project/task progress. Start with an empty DevOrbit project, or create your own projects and boards.
+DevOrbit includes a responsive homepage, personalization settings, a customizable Kanban workspace, and project-level bug tracking built with React, TypeScript, and Vite. The homepage shows real project/task progress. Start with an empty DevOrbit project, or create your own projects and boards.
 
 Kanban supports creating, renaming, and deleting projects and boards; custom column names, colors, ordering, completion states, and optional work-in-progress limits; and tasks with descriptions, priority, labels, and due dates. Drag tasks between columns, reorder tasks and columns, duplicate tasks, and search/filter work. Browser-local persistence and JSON backups are included.
 
-Bug tracking, milestones, GitHub integration, and changelog generation remain **planned**. There is no backend, authentication, or external API connection. GitHub links open this repository; they are not an account integration.
+Milestones, GitHub integration, and changelog generation remain **planned**. There is no backend, authentication, or external API connection. GitHub links open this repository; they are not an account integration.
 
 ## Using your Kanban workspace
 
@@ -21,6 +21,20 @@ Bug tracking, milestones, GitHub integration, and changelog generation remain **
 7. Export the complete workspace using the download button beside the board tabs. Import accepts a validated version 1 JSON backup up to 3 MB and requires confirmation before replacing current data.
 
 Deleting a populated column moves its tasks to a destination you choose. Task, board, and project deletion requires confirmation and cannot be undone. At least one project, one board per project, and one column per board must remain. Workspace limits are 50 projects, 30 boards per project, 30 columns per board, and 1,000 tasks per column; browser storage capacity may be reached earlier.
+
+## Tracking bugs
+
+1. Open **Bug tracking** in the sidebar or mobile menu, or use the bug-tracking link on a Kanban board. Select a project to see only its reports. `/bugs` opens the first project's tracker.
+2. Choose **Report a bug**. A title is required; add a description, reproduction steps, expected and actual behavior, environment details, and comma-separated labels. Severity defaults to Medium; choose Low (cosmetic), Medium (workaround available), High (broken feature), or Critical (blocker/data loss).
+3. Open a report to view its complete details and bookmark its URL. Use **Edit bug** to revise any field. Reports retain their creation date and update their modified date when edited or when their status changes.
+4. Change status in the list or on the report: **Open → In progress → Resolved → Closed**. Resolved means the fix is ready to verify; close it after verification. You can reopen any report by selecting Open. Active counts include Open and In progress.
+5. Search across report references, titles, descriptions, reproduction details, environment, and labels. Combine status, severity, and label filters; sort by recent updates, report date, or highest severity. Clear filters to recover the full list.
+6. Delete a report from its detail page after confirmation. Deleting a report does not change Kanban tasks. Deleting a project also deletes its bug reports; the confirmation explains this.
+7. Export/import buttons on the issue list back up the **entire workspace**, including all projects, boards, tasks, and bug reports. Imports require confirmation before replacing existing data. A backup from before bug tracking is still accepted and contains no reports, so importing it also clears current reports.
+
+Bug reports use the existing browser storage and cross-tab synchronization. Existing workspaces load with an empty bug list without losing boards or tasks. A stale report editor warns if another tab changes or removes the report before saving; close and reopen it to edit the current version. There is a limit of 1,000 reports per project, 12 labels per report (30 characters each), 120 characters per title, 1,000 for environment details, and 10,000 for each detailed text field. Browser storage limits may be reached sooner; the storage notice provides a backup action.
+
+Bug tracking is local to your workspace. It does not yet synchronize with GitHub issues, attach files, or automatically create/move Kanban tasks. Share reports across devices by exporting and importing the workspace; a report URL alone does not transfer its data.
 
 ## Personalizing DevOrbit
 
@@ -80,7 +94,7 @@ npm run check
 
 On Linux, Playwright may need system packages; use `npx playwright install --with-deps chromium` where supported. To reuse installed Chromium, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its absolute executable path instead. Tests start their own Vite server on port 4173 and use two workers. CI does not reuse an existing server.
 
-The browser suite covers homepage rendering/navigation and Kanban task creation/editing/moving/duplication/deletion, column customization and safe task migration, board/project isolation, filters, pointer and keyboard ordering, reload persistence, export/import validation, storage failure recovery, multi-tab updates, homepage progress, and mobile layouts. Personalization checks cover all seven accents in both themes, text contrast, live system appearance changes, keyboard controls, cross-tab updates, favicon/artwork changes, persistence, and storage recovery. Tests use isolated browser contexts and do not change your personal workspace. Mobile tests emulate a Chromium device; they are not a substitute for testing Safari or physical devices.
+The browser suite covers homepage rendering/navigation and Kanban task creation/editing/moving/duplication/deletion, column customization and safe task migration, board/project isolation, filters, pointer and keyboard ordering, reload persistence, export/import validation, storage failure recovery, multi-tab updates, homepage progress, and mobile layouts. Personalization checks cover all seven accents in both themes, text contrast, live system appearance changes, keyboard controls, cross-tab updates, favicon/artwork changes, persistence, and storage recovery. Bug-tracking tests cover report lifecycle, direct URLs, search/filter/sort, project isolation, legacy backups, malformed imports, cross-tab conflicts, storage recovery, limits, and responsive themed layouts. Tests use isolated browser contexts and do not change your personal workspace. Mobile tests emulate a Chromium device; they are not a substitute for testing Safari or physical devices.
 
 ## Project structure
 
@@ -107,6 +121,12 @@ src/
       ColumnEditor.tsx        # Column customization
       ConfirmDialog.tsx       # Destructive-action confirmation
       kanban.css              # Board, editor, and responsive styling
+    bugs/
+      BugPage.tsx             # Project tracker, filters, sorting, workflow actions
+      BugEditor.tsx           # Validated reporting and editing form
+      BugDetails.tsx          # Bookmarkable reproduction details and properties
+      presentation.ts         # Status/severity labels and report formatting
+      bugs.css                # Responsive tracker, details, and dashboard summary
     settings/
       SettingsPage.tsx        # Appearance controls and live preview
       AppearanceProvider.tsx  # Preferences, system detection, tab synchronization
@@ -124,12 +144,13 @@ src/
   main.tsx                     # React entry point
 tests/homepage.spec.ts          # Homepage regression checks
 tests/kanban.spec.ts            # Kanban workflows and persistence checks
+tests/bugs.spec.ts              # Bug lifecycle, isolation, backups, recovery checks
 tests/settings.spec.ts          # Appearance, accent, persistence, and contrast checks
 ```
 
 Feature-specific components, types, and future API adapters live together. Broadly reusable UI lives in `components/`. The UI uses semantic HTML, visible keyboard focus, a skip link, native modal focus management, and reduced-motion support.
 
-React Router provides `/`, `/settings`, `/boards`, and `/projects/:projectId/boards/:boardId`. Vite serves direct board URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards have recovery links.
+React Router provides `/`, `/settings`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, and `/projects/:projectId/bugs/:bugId`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, or reports have recovery links.
 
 The appearance provider applies CSS variables at the document root so all pages and modal dialogs share the same theme. Stored preferences apply before React mounts; the artwork is tinted through CSS and the favicon is updated with a local SVG data URL. No extra artwork downloads or external requests are needed when changing accents.
 
@@ -141,7 +162,7 @@ Typography uses self-hosted DM Sans and Manrope through Fontsource. Fonts and or
 
 - **Kanban boards (implemented):** project-scoped tasks, multiple boards, custom workflows, ordering, and local backups.
 - **Personalization (implemented):** Light/Dark/System modes, seven accents, matching planet artwork and tab icon, and browser-local preferences.
-- **Bug tracking:** severity, reproduction steps, and issue context.
+- **Bug tracking (implemented):** project-scoped reports, severity, reproduction details, status lifecycle, filters, stable URLs, and local backups.
 - **Milestones:** scoped release goals and progress.
 - **GitHub integration:** authenticated repositories, issues, and pull requests.
 - **Changelog generation:** editable release notes from completed work.

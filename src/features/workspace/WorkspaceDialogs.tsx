@@ -73,7 +73,13 @@ export function EntityEditor({
   )
 }
 
-export function ImportWorkspace({ onClose }: { onClose: () => void }) {
+export function ImportWorkspace({
+  onClose,
+  onImported,
+}: {
+  onClose: () => void
+  onImported?: () => void
+}) {
   const { replace } = useWorkspace()
   const [candidate, setCandidate] = useState<Workspace | null>(null)
   const [error, setError] = useState('')
@@ -82,9 +88,9 @@ export function ImportWorkspace({ onClose }: { onClose: () => void }) {
     <Modal title="Import workspace" onClose={onClose}>
       <div className="editor-form">
         <p className="confirmation-copy">
-          Restore a DevOrbit JSON backup. Importing replaces all projects and
-          boards in this browser. Export your current workspace first if you
-          want to keep it.
+          Restore a DevOrbit JSON backup. Importing replaces all projects,
+          boards, and bug reports in this browser. Export your current workspace
+          first if you want to keep it.
         </p>
         <label>
           Workspace JSON file
@@ -128,7 +134,12 @@ export function ImportWorkspace({ onClose }: { onClose: () => void }) {
                 (sum, project) => sum + project.boards.length,
                 0,
               )}{' '}
-              boards found.
+              boards ·{' '}
+              {candidate.projects.reduce(
+                (sum, project) => sum + project.bugs.length,
+                0,
+              )}{' '}
+              bug reports found.
             </p>
             <label className="checkbox-label">
               <input
@@ -153,7 +164,10 @@ export function ImportWorkspace({ onClose }: { onClose: () => void }) {
             className="button button--primary"
             disabled={!candidate || !confirmed}
             onClick={() => {
-              if (candidate && replace(candidate)) onClose()
+              if (candidate && replace(candidate)) {
+                onClose()
+                onImported?.()
+              }
             }}
           >
             Import and replace
