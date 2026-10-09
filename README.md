@@ -4,9 +4,31 @@ A calmer mission control for individual developers and their side projects. A sp
 
 ## Current scope
 
-This is the application foundation: React, TypeScript, Vite, and a responsive homepage. It includes sample projects, client-side search and status filtering, accessible detail dialogs, and a preview of the product roadmap. Project information is illustrative, held in memory, and resets on reload.
+DevOrbit includes a responsive homepage and a customizable Kanban workspace built with React, TypeScript, and Vite. The homepage shows real project/task progress. Start with an empty DevOrbit project, or create your own projects and boards.
 
-Kanban boards, bug tracking, milestones, GitHub integration, and changelog generation are **planned**, not implemented. There is no backend, authentication, persistence, or external API connection. GitHub links open this repository; they are not an account integration. No game mechanics are included.
+Kanban supports creating, renaming, and deleting projects and boards; custom column names, colors, ordering, completion states, and optional work-in-progress limits; and tasks with descriptions, priority, labels, and due dates. Drag tasks between columns, reorder tasks and columns, duplicate tasks, and search/filter work. Browser-local persistence and JSON backups are included.
+
+Bug tracking, milestones, GitHub integration, and changelog generation remain **planned**. There is no backend, authentication, or external API connection. GitHub links open this repository; they are not an account integration.
+
+## Using your Kanban workspace
+
+1. Open **Kanban boards** in the sidebar or select a project on the homepage. `/boards` opens the first board; individual boards have bookmarkable URLs.
+2. Use **New project** and the **+** next to the board tabs to create your own spaces. Project settings and board settings let you rename them and edit descriptions.
+3. Use **Add column** or a column's settings button to customize your workflow. Choose a color, position, work-in-progress limit, and whether its tasks count as completed. A limit of `0` is unlimited. Limits show warnings rather than blocking work.
+4. Use **New task** or **Add task** in a column. Set a title, description, priority, labels separated by commas, and an optional due date. Click a task to edit it, change its column, or set its position.
+5. Drag by the grip handles to reorder tasks/columns. Keyboard users can focus a handle, press **Space**, use arrow keys, then **Space** to drop or **Escape** to cancel. The task/column editors provide explicit position controls as an alternative. On mobile, scroll the board horizontally to reach other columns.
+6. Filter by text, priority, and label. Dragging is disabled while filters are active so hidden tasks cannot accidentally change position; editing remains available.
+7. Export the complete workspace using the download button beside the board tabs. Import accepts a validated version 1 JSON backup up to 3 MB and requires confirmation before replacing current data.
+
+Deleting a populated column moves its tasks to a destination you choose. Task, board, and project deletion requires confirmation and cannot be undone. At least one project, one board per project, and one column per board must remain. Workspace limits are 50 projects, 30 boards per project, 30 columns per board, and 1,000 tasks per column; browser storage capacity may be reached earlier.
+
+## Where your data lives
+
+Data is saved under `devorbit.workspace.v1` in `localStorage` after each change. It survives reloads and browser restarts on the **same browser profile and origin**. Different ports, browsers, devices, and private browsing sessions have separate workspaces. Running the production preview on another port will not show your development-server data automatically; use export/import to transfer it.
+
+There is no account or cloud sync. Clearing site data removes the workspace, so keep JSON backups. Saved changes appear in other tabs on the same origin; this is a single-user workspace, not a collaborative editor. Avoid editing the same task simultaneously in multiple tabs.
+
+Malformed or unsupported saved data is preserved and editing is blocked until you import a valid backup or explicitly reset. The recovery notice lets you download the original data first. If storage is full or unavailable, changes stay in memory and an explicit warning provides an export action; export before closing or refreshing the page.
 
 ## Getting started
 
@@ -46,7 +68,7 @@ npm run check
 
 On Linux, Playwright may need system packages; use `npx playwright install --with-deps chromium` where supported. To reuse installed Chromium, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its absolute executable path instead. Tests start their own Vite server on port 4173 and use two workers. CI does not reuse an existing server.
 
-The browser suite checks rendering, local image delivery, browser errors, horizontal overflow, combined search/filtering, empty results, sample project dialogs, keyboard dismissal and focus restoration, and desktop/mobile navigation.
+The browser suite covers homepage rendering/navigation and Kanban task creation/editing/moving/duplication/deletion, column customization and safe task migration, board/project isolation, filters, pointer and keyboard ordering, reload persistence, export/import validation, storage failure recovery, multi-tab updates, homepage progress, and mobile layouts. Tests use isolated browser contexts and do not change your personal workspace. Mobile tests emulate a Chromium device; they are not a substitute for testing Safari or physical devices.
 
 ## Project structure
 
@@ -55,36 +77,53 @@ public/
   favicon.svg                  # Orbit brand mark
   images/devorbit-planet.png    # Original space artwork
 src/
-  app/App.tsx                  # Application composition
+  app/App.tsx                  # Router and application composition
   components/
     layout/AppShell.tsx         # Sidebar, mobile navigation, header, footer
-    ui/                        # Shared badges, headings, native dialog
+    ui/                        # Shared badges, headings, native modals
   features/
     dashboard/
       Dashboard.tsx            # Homepage and local UI state
       ProjectCard.tsx          # Reusable project summary
-      data.ts                  # Demonstration data
-      types.ts                 # Project domain types
+      data.ts                  # Planned feature descriptions
+      types.ts                 # Dashboard presentation types
+    kanban/
+      KanbanPage.tsx           # Board orchestration, filters, drag-and-drop
+      BoardColumn.tsx         # Sortable column and task collection
+      TaskCard.tsx            # Sortable card with task actions
+      TaskEditor.tsx          # Task details, column and position controls
+      ColumnEditor.tsx        # Column customization
+      ConfirmDialog.tsx       # Destructive-action confirmation
+      kanban.css              # Board, editor, and responsive styling
+    workspace/
+      model.ts                # Versioned Zod schemas and domain helpers
+      context.ts              # Workspace context and typed hook
+      WorkspaceProvider.tsx   # Shared state and browser persistence
+      WorkspaceDialogs.tsx    # Project/board editing and backup import
+      WorkspaceNotice.tsx     # Storage errors and recovery
   styles/global.css            # Tokens, components, responsive layouts
   main.tsx                     # React entry point
-tests/homepage.spec.ts          # Browser behavior checks
+tests/homepage.spec.ts          # Homepage regression checks
+tests/kanban.spec.ts            # Kanban workflows and persistence checks
 ```
 
 Feature-specific components, types, and future API adapters live together. Broadly reusable UI lives in `components/`. The UI uses semantic HTML, visible keyboard focus, a skip link, native modal focus management, and reduced-motion support.
 
-There is one screen, so navigation uses section anchors. Add a router when project and issue screens need distinct URLs. Local React state serves the current UI; introduce server-state management with a real API.
+React Router provides `/`, `/boards`, and `/projects/:projectId/boards/:boardId`. Vite serves direct board URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards have recovery links.
+
+The workspace provider owns shared state and persistence, Zod validates stored/imported data, and dnd-kit handles pointer and keyboard drag-and-drop. Storage uses a versioned format, with stable IDs and duplicate-ID checks. Features consume a shared context instead of directly writing browser storage. A future server adapter can replace this boundary without putting network logic inside task cards.
 
 Typography uses self-hosted DM Sans and Manrope through Fontsource. Fonts and original planet artwork are served locally; the homepage needs no third-party requests at runtime.
 
 ## Product roadmap
 
-- **Kanban boards:** project-scoped tasks, ordering, and workflow columns.
+- **Kanban boards (implemented):** project-scoped tasks, multiple boards, custom workflows, ordering, and local backups.
 - **Bug tracking:** severity, reproduction steps, and issue context.
 - **Milestones:** scoped release goals and progress.
 - **GitHub integration:** authenticated repositories, issues, and pull requests.
 - **Changelog generation:** editable release notes from completed work.
 
-Before enabling real data, establish persistence and authentication. GitHub credentials must stay behind a backend or secure OAuth flow; never put secrets in `VITE_*` variables, which are bundled into the browser.
+Before adding cloud sync, establish server persistence and authentication. GitHub credentials must stay behind a backend or secure OAuth flow; never put secrets in `VITE_*` variables, which are bundled into the browser.
 
 ## Contribution and ownership
 

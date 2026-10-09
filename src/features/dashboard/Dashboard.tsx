@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useWorkspace } from '../workspace/context'
+import { boardPath, createBoard, newId } from '../workspace/model'
+import { EntityEditor } from '../workspace/WorkspaceDialogs'
 import {
   ArrowDown,
   ArrowRight,
@@ -9,7 +13,6 @@ import {
   Flag,
   GitBranch,
   Github,
-  Layers3,
   Orbit,
   Rocket,
   Search,
@@ -20,18 +23,38 @@ import { REPOSITORY_URL } from '../../components/layout/AppShell'
 import { Badge } from '../../components/ui/Badge'
 import { DetailDialog, type Detail } from '../../components/ui/DetailDialog'
 import { SectionHeading } from '../../components/ui/SectionHeading'
-import { demoProjects, roadmap } from './data'
+import { roadmap } from './data'
 import { ProjectCard } from './ProjectCard'
-import type { ProjectStatus } from './types'
+import type { Project, ProjectStatus } from './types'
 
-const roadmapIcons = [Layers3, Bug, Flag, GitBranch, Sparkles]
+const roadmapIcons = [Bug, Flag, GitBranch, Sparkles]
 type Filter = 'All projects' | ProjectStatus
 
 export function Dashboard() {
+  const { workspace, update, blocked } = useWorkspace()
+  const navigate = useNavigate()
+  const [newProject, setNewProject] = useState(false)
+  const projectSummaries: Project[] = workspace.projects.map((project) => {
+    const columns = project.boards.flatMap((board) => board.columns)
+    const total = columns.reduce((sum, column) => sum + column.tasks.length, 0)
+    return {
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      category: `${project.boards.length} ${project.boards.length === 1 ? 'board' : 'boards'}`,
+      status: total ? 'In orbit' : 'Pre-launch',
+      completed: columns
+        .filter((column) => column.completed)
+        .reduce((sum, column) => sum + column.tasks.length, 0),
+      total,
+      milestone: 'Open Kanban workspace',
+      color: 'mint',
+    }
+  })
   const [filter, setFilter] = useState<Filter>('All projects')
   const [query, setQuery] = useState('')
   const [detail, setDetail] = useState<Detail | null>(null)
-  const projects = demoProjects.filter(
+  const projects = projectSummaries.filter(
     (project) =>
       (filter === 'All projects' || project.status === filter) &&
       `${project.name} ${project.description} ${project.category}`
@@ -91,7 +114,7 @@ export function Dashboard() {
           YOUR NEXT CHAPTER STARTS HERE<span>01 / ∞</span>
         </div>
       </section>
-      <div className="overview-stats" aria-label="Example workspace summary">
+      <div className="overview-stats" aria-label="Workspace summary">
         <div>
           <span className="stat-icon">
             <Rocket size={19} />
@@ -99,7 +122,12 @@ export function Dashboard() {
           <span>
             <small>Projects in orbit</small>
             <strong>
-              02 <span>of 3 projects</span>
+              {
+                projectSummaries.filter(
+                  (project) => project.status === 'In orbit',
+                ).length
+              }{' '}
+              <span>of {workspace.projects.length} projects</span>
             </strong>
           </span>
         </div>
@@ -110,7 +138,11 @@ export function Dashboard() {
           <span>
             <small>Tasks completed</small>
             <strong>
-              15 <span>small wins</span>
+              {projectSummaries.reduce(
+                (sum, project) => sum + project.completed,
+                0,
+              )}{' '}
+              <span>small wins</span>
             </strong>
           </span>
         </div>
@@ -119,13 +151,17 @@ export function Dashboard() {
             <Flag size={19} />
           </span>
           <span>
-            <small>Next milestone</small>
+            <small>Your boards</small>
             <strong className="stat-milestone">
-              First light <span>DevOrbit · v0.1</span>
+              {workspace.projects.reduce(
+                (sum, project) => sum + project.boards.length,
+                0,
+              )}{' '}
+              <span>Custom workflows</span>
             </strong>
           </span>
         </div>
-        <Badge>Sample workspace</Badge>
+        <Badge>Local workspace</Badge>
       </div>
       <section
         id="projects"
@@ -135,8 +171,16 @@ export function Dashboard() {
         <SectionHeading
           id="projects-title"
           title="Your little universe"
-          subtitle="A sample workspace for the things you’ll bring to life."
-          action={<span className="section-count">03 PROJECTS</span>}
+          subtitle="Your projects, your boards, your way of working."
+          action={
+            <button
+              className="button button--outline"
+              disabled={blocked || workspace.projects.length >= 50}
+              onClick={() => setNewProject(true)}
+            >
+              New project
+            </button>
+          }
         />
         <div className="project-toolbar">
           <div
@@ -155,7 +199,9 @@ export function Dashboard() {
                   onClick={() => setFilter(item)}
                 >
                   {item}
-                  {item === 'All projects' && <span>3</span>}
+                  {item === 'All projects' && (
+                    <span>{workspace.projects.length}</span>
+                  )}
                 </button>
               ),
             )}
@@ -178,11 +224,13 @@ export function Dashboard() {
               key={project.id}
               project={project}
               onSelect={(selected) =>
-                setDetail({
-                  title: selected.name,
-                  label: 'EXAMPLE PROJECT',
-                  description: `${selected.description} This sample has ${selected.completed} of ${selected.total} tasks complete, with “${selected.milestone}” as its next milestone.`,
-                })
+                navigate(
+                  boardPath(
+                    workspace.projects.find(
+                      (project) => project.id === selected.id,
+                    )!,
+                  ),
+                )
               }
             />
           ))}
@@ -219,22 +267,17 @@ export function Dashboard() {
               <Circle size={18} />
             </span>
             <div>
-              <strong>Lay the foundation</strong>
+              <strong>Make your workflow yours</strong>
               <small>
-                DevOrbit <span>·</span> First light milestone
+                Customize columns <span>·</span> Add your first task
               </small>
             </div>
-            <Badge tone="green">In progress</Badge>
+            <Badge tone="green">Ready</Badge>
           </div>
-          <a
-            className="text-link"
-            href={`${REPOSITORY_URL}#getting-started`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Get to know the project
+          <Link className="text-link" to="/boards">
+            Open your Kanban board
             <ArrowUpRight size={16} />
-          </a>
+          </Link>
           <span className="focus-orbit" aria-hidden="true" />
         </section>
         <section
@@ -288,6 +331,26 @@ export function Dashboard() {
         </a>
       </div>
       <DetailDialog detail={detail} onClose={() => setDetail(null)} />
+      {newProject && (
+        <EntityEditor
+          title="New project"
+          onClose={() => setNewProject(false)}
+          onSave={(name, description) => {
+            const project = {
+              id: newId(),
+              name,
+              description,
+              boards: [createBoard()],
+            }
+            const saved = update((current) => ({
+              ...current,
+              projects: [...current.projects, project],
+            }))
+            if (saved) navigate(boardPath(project))
+            return saved
+          }}
+        />
+      )}
     </>
   )
 }

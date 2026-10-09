@@ -46,8 +46,8 @@ export function DetailDialog({
         <h2 id="dialog-title">{detail?.title}</h2>
         <p>{detail?.description}</p>
         <p className="dialog-note">
-          You’re exploring the DevOrbit foundation. Project data is
-          illustrative; management features are on the roadmap.
+          This feature is on the roadmap. You can already organize your work
+          with customizable Kanban boards.
         </p>
         <button className="button button--primary" onClick={onClose}>
           Back to mission control

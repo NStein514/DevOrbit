@@ -12,7 +12,9 @@ export function ProjectCard({
   onSelect: (project: Project) => void
 }) {
   const Icon = icons[project.color]
-  const progress = Math.round((project.completed / project.total) * 100)
+  const progress = project.total
+    ? Math.round((project.completed / project.total) * 100)
+    : 0
   return (
     <button
       className={`project-card project-card--${project.color}`}

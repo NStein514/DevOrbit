@@ -14,7 +14,7 @@ test('renders a responsive homepage with artwork and no browser errors', async (
   await expect(
     page.getByRole('heading', { name: 'Mission control.' }),
   ).toBeVisible()
-  await expect(page.getByRole('button', { name: /^Explore / })).toHaveCount(3)
+  await expect(page.getByRole('button', { name: /^Explore / })).toHaveCount(1)
   const image = await page.request.get('/images/devorbit-planet.png')
   expect(image.ok()).toBeTruthy()
   expect(image.headers()['content-type']).toContain('image/png')
@@ -26,21 +26,22 @@ test('renders a responsive homepage with artwork and no browser errors', async (
   expect(errors).toEqual([])
 })
 
-test('combines search and status filters and recovers from empty results', async ({
+test('filters the live project list and recovers from empty results', async ({
   page,
 }) => {
   await page.getByRole('button', { name: 'In orbit', exact: true }).click()
-  await expect(page.getByRole('button', { name: /^Explore / })).toHaveCount(2)
-  await page.getByRole('searchbox', { name: 'Search projects' }).fill('COSMIC')
-  await expect(
-    page.getByRole('button', { name: 'Explore Cosmic Notes' }),
-  ).toBeVisible()
-  await expect(page.getByRole('button', { name: /^Explore / })).toHaveCount(1)
+  await expect(page.getByRole('button', { name: /^Explore / })).toHaveCount(0)
   await page.getByRole('button', { name: 'Pre-launch', exact: true }).click()
-  await expect(page.getByRole('status')).toHaveText(/No projects/)
-  await page.getByRole('searchbox', { name: 'Search projects' }).fill('')
   await expect(
-    page.getByRole('button', { name: 'Explore Launchpad' }),
+    page.getByRole('button', { name: 'Explore DevOrbit' }),
+  ).toBeVisible()
+  await page.getByRole('searchbox', { name: 'Search projects' }).fill('missing')
+  await expect(page.getByRole('status')).toHaveText(/No projects/)
+  await page
+    .getByRole('searchbox', { name: 'Search projects' })
+    .fill('DEVORBIT')
+  await expect(
+    page.getByRole('button', { name: 'Explore DevOrbit' }),
   ).toBeVisible()
 })
 
@@ -60,11 +61,18 @@ test('opens planned feature details and returns focus after Escape', async ({
   await expect(trigger).toBeFocused()
 })
 
-test('opens and closes sample project details', async ({ page }) => {
+test('opens the project board and supports direct URL reload', async ({
+  page,
+}) => {
   await page.getByRole('button', { name: 'Explore DevOrbit' }).click()
-  await expect(page.getByRole('dialog')).toContainText('8 of 12 tasks')
-  await page.getByRole('button', { name: 'Back to mission control' }).click()
-  await expect(page.getByRole('dialog')).not.toBeVisible()
+  await expect(page).toHaveURL(/\/projects\/devorbit\/boards\/devorbit-board$/)
+  await expect(
+    page.getByRole('heading', { name: 'My workflow.' }),
+  ).toBeVisible()
+  await page.reload()
+  await expect(
+    page.getByRole('region', { name: 'Backlog column', exact: true }),
+  ).toBeVisible()
 })
 
 test('navigates to projects on desktop and mobile', async ({

@@ -1,8 +1,11 @@
 import { useState, type ReactNode } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { useWorkspace } from '../../features/workspace/context'
 import {
   ArrowUpRight,
   Github,
   LayoutDashboard,
+  Layers3,
   Menu,
   Orbit,
   Rocket,
@@ -15,18 +18,21 @@ export const REPOSITORY_URL = 'https://github.com/NStein514/DevOrbit'
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { pathname } = useLocation()
+  const isBoard = pathname !== '/'
+  const { workspace } = useWorkspace()
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
       <aside className="sidebar">
-        <a className="brand" href="#" aria-label="DevOrbit home">
+        <Link className="brand" to="/" aria-label="DevOrbit home">
           <span className="brand-mark">
             <Orbit size={25} strokeWidth={1.6} />
           </span>
           DevOrbit<span className="brand-dot">.</span>
-        </a>
+        </Link>
         <button
           className="icon-button mobile-menu"
           aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
@@ -52,24 +58,33 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <p className="nav-label">WORKSPACE</p>
           <nav aria-label="Main navigation" onClick={() => setMenuOpen(false)}>
-            <a
-              className="nav-link active"
-              href="#main-content"
-              aria-current="page"
+            <Link
+              className={`nav-link ${!isBoard ? 'active' : ''}`}
+              to="/"
+              aria-current={!isBoard ? 'page' : undefined}
             >
               <LayoutDashboard size={18} />
               Overview
               <span className="nav-active-dot" />
-            </a>
-            <a className="nav-link" href="#projects">
+            </Link>
+            <Link className="nav-link" to="/#projects">
               <Rocket size={18} />
-              Projects<span className="nav-count">3</span>
-            </a>
-            <a className="nav-link" href="#roadmap">
+              Projects
+              <span className="nav-count">{workspace.projects.length}</span>
+            </Link>
+            <Link
+              className={`nav-link ${isBoard ? 'active' : ''}`}
+              to="/boards"
+              aria-current={isBoard ? 'page' : undefined}
+            >
+              <Layers3 size={18} />
+              Kanban boards
+            </Link>
+            <Link className="nav-link" to="/#roadmap">
               <Telescope size={18} />
               On the horizon
               <ArrowUpRight size={14} className="nav-end" />
-            </a>
+            </Link>
           </nav>
           <div className="sidebar-bottom">
             <div className="sidebar-note">
@@ -94,7 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </a>
             <div className="sidebar-footer">
               <span className="status-dot" />
-              Foundation preview<span>v0.1</span>
+              Personal workspace<span>v0.2</span>
             </div>
           </div>
         </div>
@@ -103,7 +118,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="topbar">
           <div className="breadcrumb">
             Workspace<span>/</span>
-            <strong>Overview</strong>
+            <strong>{isBoard ? 'Kanban boards' : 'Overview'}</strong>
           </div>
           <div className="topbar-right">
             <span className="personal-label">
