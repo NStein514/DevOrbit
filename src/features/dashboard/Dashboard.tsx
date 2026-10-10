@@ -28,7 +28,7 @@ import { roadmap } from './data'
 import { ProjectCard } from './ProjectCard'
 import type { Project, ProjectStatus } from './types'
 
-const roadmapIcons = [Sparkles, Timer, Gamepad2]
+const roadmapIcons = [Sparkles, Gamepad2]
 type Filter = 'All projects' | ProjectStatus
 
 export function Dashboard() {
@@ -331,15 +331,15 @@ export function Dashboard() {
               <Circle size={18} />
             </span>
             <div>
-              <strong>Make your workflow yours</strong>
+              <strong>Find your focus rhythm</strong>
               <small>
-                Customize columns <span>·</span> Add your first task
+                Personal focus sessions <span>·</span> Breaks that fit your day
               </small>
             </div>
             <Badge tone="green">Ready</Badge>
           </div>
-          <Link className="text-link" to="/boards">
-            Open your Kanban board
+          <Link className="text-link" to="/pomodoro">
+            <Timer size={16} /> Open Pomodoro Timer
             <ArrowUpRight size={16} />
           </Link>
           <span className="focus-orbit" aria-hidden="true" />

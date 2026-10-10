@@ -49,15 +49,15 @@ test('opens planned feature details and returns focus after Escape', async ({
   page,
 }) => {
   const trigger = page.getByRole('button', {
-    name: /Customizable Pomodoro Timer/,
+    name: /Changelog generation/,
   })
   await trigger.click()
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
   await expect(
-    dialog.getByRole('heading', { name: 'Customizable Pomodoro Timer' }),
+    dialog.getByRole('heading', { name: 'Changelog generation' }),
   ).toBeVisible()
-  await expect(dialog).toContainText('future release')
+  await expect(dialog).toContainText('release notes')
   await page.keyboard.press('Escape')
   await expect(dialog).not.toBeVisible()
   await expect(trigger).toBeFocused()

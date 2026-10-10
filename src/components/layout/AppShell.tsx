@@ -1,6 +1,9 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useWorkspace } from '../../features/workspace/context'
+import { usePomodoro } from '../../features/pomodoro/context'
+import { formatTime, labels } from '../../features/pomodoro/model'
+import '../../features/pomodoro/pomodoro.css'
 import {
   ArrowUpRight,
   Github,
@@ -15,6 +18,7 @@ import {
   Settings,
   Telescope,
   X,
+  Timer,
 } from 'lucide-react'
 
 export const REPOSITORY_URL = 'https://github.com/NStein514/DevOrbit'
@@ -32,6 +36,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isGitHub =
     pathname === '/github' || /^\/projects\/[^/]+\/github$/.test(pathname)
   const isSettings = pathname === '/settings'
+  const isPomodoro = pathname === '/pomodoro'
+  const pomodoro = usePomodoro()
   const isOverview = pathname === '/'
   const { workspace } = useWorkspace()
   return (
@@ -120,6 +126,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               <ArrowUpRight size={14} className="nav-end" />
             </Link>
             <Link
+              className={`nav-link ${isPomodoro ? 'active' : ''}`}
+              to="/pomodoro"
+              aria-current={isPomodoro ? 'page' : undefined}
+            >
+              <Timer size={18} /> Pomodoro Timer
+            </Link>
+            <Link
               className={`nav-link ${isSettings ? 'active' : ''}`}
               to="/settings"
               aria-current={isSettings ? 'page' : undefined}
@@ -161,20 +174,40 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="breadcrumb">
             Workspace<span>/</span>
             <strong>
-              {isGitHub
-                ? 'GitHub integration'
-                : isSettings
-                  ? 'Settings'
-                  : isMilestones
-                    ? 'Milestones'
-                    : isBugs
-                      ? 'Bug tracking'
-                      : isBoard
-                        ? 'Kanban boards'
-                        : 'Overview'}
+              {isPomodoro
+                ? 'Pomodoro Timer'
+                : isGitHub
+                  ? 'GitHub integration'
+                  : isSettings
+                    ? 'Settings'
+                    : isMilestones
+                      ? 'Milestones'
+                      : isBugs
+                        ? 'Bug tracking'
+                        : isBoard
+                          ? 'Kanban boards'
+                          : 'Overview'}
             </strong>
           </div>
           <div className="topbar-right">
+            {!isPomodoro &&
+              (pomodoro.timer.deadline !== null ||
+                pomodoro.remaining < pomodoro.timer.duration) && (
+                <Link
+                  className="pomodoro-mini"
+                  to="/pomodoro"
+                  aria-label={`${labels[pomodoro.timer.phase]} ${formatTime(pomodoro.remaining)}${pomodoro.timer.deadline === null ? ' paused' : ''}. Open timer`}
+                >
+                  <Timer size={16} />
+                  <span className="pomodoro-mini-label">
+                    {labels[pomodoro.timer.phase]}
+                  </span>
+                  {formatTime(pomodoro.remaining)}
+                  {pomodoro.timer.deadline === null && (
+                    <span className="pomodoro-mini-label"> · Paused</span>
+                  )}
+                </Link>
+              )}
             <span className="personal-label">
               <span className="status-dot" />
               Your personal mission control

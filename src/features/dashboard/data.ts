@@ -7,13 +7,6 @@ export const roadmap = [
     caption: 'Every little launch deserves a story.',
   },
   {
-    id: 'pomodoro',
-    title: 'Customizable Pomodoro Timer',
-    description:
-      'A fully customizable focus timer is planned: shape focus sessions, short and long breaks, and your session rhythm around the way you work. Timer controls and preferences will arrive in a future release.',
-    caption: 'Find your rhythm. Make room for focus.',
-  },
-  {
     id: 'gamification',
     title: 'Gamification',
     description:

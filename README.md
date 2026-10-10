@@ -4,11 +4,24 @@ A calmer mission control for individual developers and their side projects. A sp
 
 ## Current scope
 
-DevOrbit includes a responsive homepage, personalization settings, a customizable Kanban workspace, project-level bug tracking, milestones, and GitHub integration built with React, TypeScript, and Vite. The homepage shows real project/task progress and bug/milestone summaries. Start with an empty DevOrbit project, or create your own projects and boards.
+DevOrbit includes a responsive homepage, personalization settings, a customizable Kanban workspace, project-level bug tracking, milestones, GitHub integration, and a customizable Pomodoro Timer built with React, TypeScript, and Vite. The homepage shows real project/task progress and bug/milestone summaries. Start with an empty DevOrbit project, or create your own projects and boards.
 
 Kanban supports creating, renaming, and deleting projects and boards; custom column names, colors, ordering, completion states, and optional work-in-progress limits; and tasks with descriptions, priority, labels, and due dates. Drag tasks between columns, reorder tasks and columns, duplicate tasks, and search/filter work. Browser-local persistence and JSON backups are included.
 
-Changelog generation, a Customizable Pomodoro Timer, and Gamification remain **planned**. GitHub integration uses a small Node/Express backend for secure OAuth or personal access token sessions. Project data still lives in your browser; there is no DevOrbit account or cloud workspace sync.
+Changelog generation and Gamification remain **planned**. GitHub integration uses a small Node/Express backend for secure OAuth or personal access token sessions. Project data still lives in your browser; there is no DevOrbit account or cloud workspace sync.
+
+## Customizable Pomodoro Timer
+
+Open **Pomodoro Timer** from the sidebar or **Open Pomodoro Timer** on the dashboard, or visit `/pomodoro` directly.
+
+- Customize focus (1–180 minutes), short breaks (1–60), long breaks (1–120), sessions before a long break (1–12), and your daily session goal (1–20). Defaults are 25/5/15 minutes, four sessions per cycle, and eight sessions per day. Use **Save preferences** to apply changes or **Use default preferences** to populate the form with defaults before saving.
+- Start, pause, resume, restart, skip, or select a session type. Only naturally completed focus sessions count toward history and the daily goal. Skipping a focus session does not advance the completed-session count. A long break resets the cycle when it ends or is skipped.
+- Choose whether focus sessions and breaks start automatically, enable a completion sound, and adjust its volume. **Test sound** previews the saved volume. Browser audio requires a user gesture after reload; sound is best-effort and plays in visible tabs. The timer announces transitions to assistive technology.
+- Add an optional intention and project before starting. Completed sessions retain these labels even if a project is later renamed or removed. The page shows today's completed sessions and focus minutes, plus the ten most recent sessions from the latest 100 saved entries.
+- The timer runs across application navigation, with a header shortcut and browser-tab countdown. Absolute deadlines recover elapsed time after reload, background throttling, or device sleep. Only the pending session completes on recovery; the next automatic session starts when the app resumes, without inventing unattended sessions.
+- Duration changes affect the next session or restart; running and paused sessions retain their duration. Mode selection and skipping discard the unfinished session and leave the next one ready to start.
+
+Timer state, preferences, and history are saved separately under `devorbit.pomodoro.v1` in localStorage and synchronize between tabs on the same origin. They are not included in workspace JSON backups. Storage failures show a warning; invalid saved timer data is preserved until **Reset timer data** is explicitly confirmed. Reset removes timer preferences and history without changing project data. Clearing browser data removes this history. Prefer one tab for timer controls when working across multiple tabs.
 
 ## Using your Kanban workspace
 
@@ -212,6 +225,12 @@ src/
       appearance.ts           # Palette definitions, validation, theme/favicon updates
       context.ts              # Typed appearance context and hook
       settings.css            # Responsive personalization layout
+    pomodoro/
+      PomodoroPage.tsx        # Timer controls, preferences, intentions, and history
+      PomodoroProvider.tsx    # Deadlines, transitions, persistence, tab sync, audio
+      model.ts               # Validated timer state and session cadence
+      context.ts             # Shared timer context and hook
+      pomodoro.css           # Responsive, theme-aware timer layout
     workspace/
       model.ts                # Versioned Zod schemas and domain helpers
       context.ts              # Workspace context and typed hook
@@ -227,6 +246,7 @@ tests/bugs.spec.ts              # Bug lifecycle, isolation, backups, recovery ch
 tests/milestones.spec.ts        # Scope, progress, lifecycle, backups, recovery checks
 tests/github.spec.ts            # GitHub workflows and future horizon scope
 tests/settings.spec.ts          # Appearance, accent, persistence, and contrast checks
+tests/pomodoro.spec.ts          # Timing, cadence, persistence, recovery, mobile checks
 ```
 
 Feature-specific components, types, and future API adapters live together. Broadly reusable UI lives in `components/`. The UI uses semantic HTML, visible keyboard focus, a skip link, native modal focus management, and reduced-motion support.
@@ -247,7 +267,7 @@ Typography uses self-hosted DM Sans and Manrope through Fontsource. Fonts and or
 - **Milestones (implemented):** project-scoped goals, linked Kanban tasks and bugs, live progress, target dates, lifecycle controls, and local backups.
 - **GitHub integration (implemented):** OAuth/token connections, project repository links, issue and pull request browsing, and reviewed local issue imports.
 - **Changelog generation (planned):** editable release notes from completed work.
-- **Customizable Pomodoro Timer (planned):** personal focus sessions, breaks, and session rhythms.
+- **Customizable Pomodoro Timer (implemented):** adjustable focus/break durations, session cadence, automatic starts, sound/volume, daily goals, project intentions, and persistent session history.
 - **Gamification (planned):** Asteroid Escape, Lunar Landing, Orbit Architect, Gravity Golf, Cosmic Cleanup, Planet Pop, and Solar Surfer.
 
 Before adding cloud workspace sync, establish persistent workspace storage and DevOrbit account authentication. GitHub credentials already stay behind the backend; never expose secrets in the browser bundle.

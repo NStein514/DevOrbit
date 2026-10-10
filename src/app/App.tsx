@@ -14,6 +14,9 @@ import { BoardLanding, KanbanPage } from '../features/kanban/KanbanPage'
 import { AppearanceProvider } from '../features/settings/AppearanceProvider'
 import { BugLanding, BugPage } from '../features/bugs/BugPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
+import { PomodoroProvider } from '../features/pomodoro/PomodoroProvider'
+
+const PomodoroPage = lazy(() => import('../features/pomodoro/PomodoroPage'))
 
 const GitHubPage = lazy(() => import('../features/github/GitHubPage'))
 
@@ -33,52 +36,58 @@ export function App() {
     <BrowserRouter>
       <AppearanceProvider>
         <WorkspaceProvider>
-          <ScrollToLocation />
-          <AppShell>
-            <WorkspaceNotice />
-            <Suspense fallback={<p role="status">Opening your workspace…</p>}>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/boards" element={<BoardLanding />} />
-                <Route path="/bugs" element={<BugLanding />} />
-                <Route path="/projects/:projectId/bugs" element={<BugPage />} />
-                <Route
-                  path="/projects/:projectId/bugs/:bugId"
-                  element={<BugPage />}
-                />
-                <Route path="/milestones" element={<MilestoneLanding />} />
-                <Route
-                  path="/projects/:projectId/milestones"
-                  element={<MilestonePage />}
-                />
-                <Route
-                  path="/projects/:projectId/milestones/:milestoneId"
-                  element={<MilestonePage />}
-                />
-                <Route path="/github" element={<GitHubPage />} />
-                <Route
-                  path="/projects/:projectId/github"
-                  element={<GitHubPage />}
-                />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route
-                  path="/projects/:projectId/boards/:boardId"
-                  element={<KanbanPage />}
-                />
-                <Route
-                  path="*"
-                  element={
-                    <div className="board-not-found">
-                      <h1>Lost in space?</h1>
-                      <Link className="button button--primary" to="/">
-                        Back to mission control
-                      </Link>
-                    </div>
-                  }
-                />
-              </Routes>
-            </Suspense>
-          </AppShell>
+          <PomodoroProvider>
+            <ScrollToLocation />
+            <AppShell>
+              <WorkspaceNotice />
+              <Suspense fallback={<p role="status">Opening your workspace…</p>}>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/boards" element={<BoardLanding />} />
+                  <Route path="/bugs" element={<BugLanding />} />
+                  <Route
+                    path="/projects/:projectId/bugs"
+                    element={<BugPage />}
+                  />
+                  <Route
+                    path="/projects/:projectId/bugs/:bugId"
+                    element={<BugPage />}
+                  />
+                  <Route path="/milestones" element={<MilestoneLanding />} />
+                  <Route
+                    path="/projects/:projectId/milestones"
+                    element={<MilestonePage />}
+                  />
+                  <Route
+                    path="/projects/:projectId/milestones/:milestoneId"
+                    element={<MilestonePage />}
+                  />
+                  <Route path="/github" element={<GitHubPage />} />
+                  <Route
+                    path="/projects/:projectId/github"
+                    element={<GitHubPage />}
+                  />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/pomodoro" element={<PomodoroPage />} />
+                  <Route
+                    path="/projects/:projectId/boards/:boardId"
+                    element={<KanbanPage />}
+                  />
+                  <Route
+                    path="*"
+                    element={
+                      <div className="board-not-found">
+                        <h1>Lost in space?</h1>
+                        <Link className="button button--primary" to="/">
+                          Back to mission control
+                        </Link>
+                      </div>
+                    }
+                  />
+                </Routes>
+              </Suspense>
+            </AppShell>
+          </PomodoroProvider>
         </WorkspaceProvider>
       </AppearanceProvider>
     </BrowserRouter>
