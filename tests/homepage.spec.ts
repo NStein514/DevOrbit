@@ -48,14 +48,16 @@ test('filters the live project list and recovers from empty results', async ({
 test('opens planned feature details and returns focus after Escape', async ({
   page,
 }) => {
-  const trigger = page.getByRole('button', { name: /GitHub integration/ })
+  const trigger = page.getByRole('button', {
+    name: /Customizable Pomodoro Timer/,
+  })
   await trigger.click()
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
   await expect(
-    dialog.getByRole('heading', { name: 'GitHub integration' }),
+    dialog.getByRole('heading', { name: 'Customizable Pomodoro Timer' }),
   ).toBeVisible()
-  await expect(dialog).toContainText('later phase')
+  await expect(dialog).toContainText('future release')
   await page.keyboard.press('Escape')
   await expect(dialog).not.toBeVisible()
   await expect(trigger).toBeFocused()

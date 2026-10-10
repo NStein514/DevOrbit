@@ -166,6 +166,7 @@ function BugView({ project, bugId }: { project: Project; bugId?: string }) {
     const timestamp = new Date().toISOString()
     const bug: BugReport = {
       ...draft,
+      githubIssue: original?.githubIssue,
       id: original?.id ?? newId(),
       createdAt: original?.createdAt ?? timestamp,
       updatedAt: timestamp,
@@ -206,6 +207,7 @@ function BugView({ project, bugId }: { project: Project; bugId?: string }) {
         <Link className="text-link" to={milestonesPath(project)}>
           Milestones
         </Link>
+        <Link to={`/projects/${project.id}/github`}>GitHub</Link>
       </div>
       {bugId ? (
         selected ? (

@@ -303,6 +303,7 @@ function BoardView({ projectId, board }: { projectId: string; board: Board }) {
         <Link to={milestonesPath(project)} className="text-link">
           Milestones
         </Link>
+        <Link to={`/projects/${project.id}/github`}>GitHub</Link>
       </div>
       <div className="board-heading">
         <div>

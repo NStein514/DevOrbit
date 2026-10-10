@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { GitHubSource } from '../github/GitHubSource'
 import { RelatedMilestones } from '../milestones/RelatedMilestones'
 import { Modal } from '../../components/ui/Modal'
 import { newId, priorities, type Board, type Task } from '../workspace/model'
@@ -47,6 +48,7 @@ export function TaskEditor({
     }
     const next: Task = {
       id: task?.id ?? newId(),
+      githubIssue: task?.githubIssue,
       title,
       description: String(form.get('description')).trim(),
       priority: form.get('priority') as Task['priority'],
@@ -63,6 +65,7 @@ export function TaskEditor({
     <Modal title={task ? 'Edit task' : 'New task'} onClose={onClose}>
       <form onSubmit={submit} className="editor-form">
         {task && <RelatedMilestones taskId={task.id} />}
+        {task?.githubIssue && <GitHubSource source={task.githubIssue} />}
         <label>
           Title
           <input

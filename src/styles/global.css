@@ -1514,3 +1514,22 @@ h1 > span {
   border-color: var(--accent-mark);
   box-shadow: 0 0 0 2px var(--accent-border);
 }
+
+.github-source {
+  margin: 14px 0;
+  overflow-wrap: anywhere;
+}
+.github-source .text-link {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+}
+.github-source small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-top: 6px;
+}

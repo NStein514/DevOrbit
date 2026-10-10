@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { repositoryRefSchema, issueRefSchema } from '../../../shared/github.ts'
 
 export const colors = [
   'sage',
@@ -24,6 +25,7 @@ export const bugStatuses = [
 export const bugSeverities = ['low', 'medium', 'high', 'critical'] as const
 export const bugSchema = z.object({
   id,
+  githubIssue: issueRefSchema.optional(),
   title: name,
   description: z.string().max(10000),
   status: z.enum(bugStatuses),
@@ -37,7 +39,10 @@ export const bugSchema = z.object({
   updatedAt: z.iso.datetime(),
 })
 export type BugReport = z.infer<typeof bugSchema>
-export type BugDraft = Omit<BugReport, 'id' | 'createdAt' | 'updatedAt'>
+export type BugDraft = Omit<
+  BugReport,
+  'id' | 'createdAt' | 'updatedAt' | 'githubIssue'
+>
 export const isActiveBug = (bug: BugReport) =>
   bug.status === 'open' || bug.status === 'in-progress'
 export const bugsPath = (project: { id: string }) =>
@@ -45,6 +50,7 @@ export const bugsPath = (project: { id: string }) =>
 
 export const taskSchema = z.object({
   id,
+  githubIssue: issueRefSchema.optional(),
   title: name,
   description: z.string().max(10000),
   priority: z.enum(priorities),
@@ -88,6 +94,7 @@ export const milestonesPath = (project: { id: string }) =>
 
 export const projectSchema = z.object({
   id,
+  githubRepository: repositoryRefSchema.optional(),
   name,
   description: z.string().max(1000),
   // Older version 1 workspaces did not have bug reports.

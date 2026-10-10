@@ -29,6 +29,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isMilestones =
     pathname === '/milestones' ||
     /^\/projects\/[^/]+\/milestones(?:\/|$)/.test(pathname)
+  const isGitHub =
+    pathname === '/github' || /^\/projects\/[^/]+\/github$/.test(pathname)
   const isSettings = pathname === '/settings'
   const isOverview = pathname === '/'
   const { workspace } = useWorkspace()
@@ -105,6 +107,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Flag size={18} /> Milestones
             </Link>
+            <Link
+              className={`nav-link ${isGitHub ? 'active' : ''}`}
+              to="/github"
+              aria-current={isGitHub ? 'page' : undefined}
+            >
+              <Github size={18} /> GitHub integration
+            </Link>
             <Link className="nav-link" to="/#roadmap">
               <Telescope size={18} />
               On the horizon
@@ -152,15 +161,17 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="breadcrumb">
             Workspace<span>/</span>
             <strong>
-              {isSettings
-                ? 'Settings'
-                : isMilestones
-                  ? 'Milestones'
-                  : isBugs
-                    ? 'Bug tracking'
-                    : isBoard
-                      ? 'Kanban boards'
-                      : 'Overview'}
+              {isGitHub
+                ? 'GitHub integration'
+                : isSettings
+                  ? 'Settings'
+                  : isMilestones
+                    ? 'Milestones'
+                    : isBugs
+                      ? 'Bug tracking'
+                      : isBoard
+                        ? 'Kanban boards'
+                        : 'Overview'}
             </strong>
           </div>
           <div className="topbar-right">

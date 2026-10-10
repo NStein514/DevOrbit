@@ -215,6 +215,7 @@ function MilestoneView({
         <div className="milestone-context-links">
           <Link to={boardPath(project)}>Kanban board</Link>
           <Link to={bugsPath(project)}>Bug tracking</Link>
+          <Link to={`/projects/${project.id}/github`}>GitHub</Link>
         </div>
       </div>
       {milestoneId ? (

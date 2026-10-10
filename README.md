@@ -4,11 +4,11 @@ A calmer mission control for individual developers and their side projects. A sp
 
 ## Current scope
 
-DevOrbit includes a responsive homepage, personalization settings, a customizable Kanban workspace, project-level bug tracking, and milestones built with React, TypeScript, and Vite. The homepage shows real project/task progress and bug/milestone summaries. Start with an empty DevOrbit project, or create your own projects and boards.
+DevOrbit includes a responsive homepage, personalization settings, a customizable Kanban workspace, project-level bug tracking, milestones, and GitHub integration built with React, TypeScript, and Vite. The homepage shows real project/task progress and bug/milestone summaries. Start with an empty DevOrbit project, or create your own projects and boards.
 
 Kanban supports creating, renaming, and deleting projects and boards; custom column names, colors, ordering, completion states, and optional work-in-progress limits; and tasks with descriptions, priority, labels, and due dates. Drag tasks between columns, reorder tasks and columns, duplicate tasks, and search/filter work. Browser-local persistence and JSON backups are included.
 
-GitHub integration and changelog generation remain **planned**. There is no backend, authentication, or external API connection. GitHub links open this repository; they are not an account integration.
+Changelog generation, a Customizable Pomodoro Timer, and Gamification remain **planned**. GitHub integration uses a small Node/Express backend for secure OAuth or personal access token sessions. Project data still lives in your browser; there is no DevOrbit account or cloud workspace sync.
 
 ## Using your Kanban workspace
 
@@ -34,7 +34,7 @@ Deleting a populated column moves its tasks to a destination you choose. Task, b
 
 Bug reports use the existing browser storage and cross-tab synchronization. Existing workspaces load with an empty bug list without losing boards or tasks. A stale report editor warns if another tab changes or removes the report before saving; close and reopen it to edit the current version. There is a limit of 1,000 reports per project, 12 labels per report (30 characters each), 120 characters per title, 1,000 for environment details, and 10,000 for each detailed text field. Browser storage limits may be reached sooner; the storage notice provides a backup action.
 
-Bug tracking is local to your workspace. It does not yet synchronize with GitHub issues, attach files, or automatically create/move Kanban tasks. Share reports across devices by exporting and importing the workspace; a report URL alone does not transfer its data.
+Bug tracking is local to your workspace. You can import GitHub issues as bug reports from the GitHub integration page. These are local snapshots, without automatic synchronization, attachments, or automatic task movement. Share reports across devices by exporting and importing the workspace; a report URL alone does not transfer its data.
 
 ## Planning milestones
 
@@ -49,6 +49,44 @@ Bug tracking is local to your workspace. It does not yet synchronize with GitHub
 A task or bug can belong to multiple milestones within its project. There is a limit of 100 milestones per project, 1,000 linked tasks and 1,000 linked bugs per milestone, 120 characters per name, and 10,000 per description. Milestones share workspace persistence, storage recovery, cross-tab synchronization, and JSON backups. Stale editors warn before overwriting another tab's milestone changes.
 
 Export/import buttons on the milestone list transfer the **entire workspace**. Older version 1 backups remain supported and load with no milestones; importing one replaces current data, including milestones. Invalid, duplicate, or cross-project work references are rejected. Milestone URLs identify browser-local data and do not share it across devices.
+
+## Connecting GitHub
+
+Open **GitHub integration** in the sidebar or follow **GitHub** from a project board, tracker, or milestone page. Choose a project, connect your GitHub account, and link one repository to that project. Different projects can link different repositories or share one repository.
+
+### Local setup
+
+`npm ci` installs both frontend and backend dependencies. `npm run dev` serves the UI and the GitHub API together on the Vite port; no second terminal is needed. A static-only host cannot run the GitHub API.
+
+Copy `.env.example` to `.env` and set `DEVORBIT_ORIGIN` to the exact URL you open in your browser, normally `http://localhost:5173` (no trailing slash). Restart the server after changing environment values. `localhost` and `127.0.0.1` are different origins; using the wrong origin rejects sign-in requests.
+
+Choose either connection method:
+
+- **OAuth:** Create an OAuth App in [GitHub developer settings](https://github.com/settings/developers). Use `http://localhost:5173` as its homepage and `http://localhost:5173/api/github/oauth/callback` as its authorization callback. Put its client ID and client secret in `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in `.env`, then restart DevOrbit. **Connect with GitHub** opens GitHub's consent screen. The default scope is `read:user public_repo`; set `GITHUB_OAUTH_SCOPE=read:user repo` for private repositories. GitHub OAuth repository scopes include write permission, although DevOrbit's integration only reads GitHub. For narrower repository permissions, use the token option below. Organization policies may require approval.
+- **Fine-grained token:** Create a token in [GitHub token settings](https://github.com/settings/personal-access-tokens/new), select the repositories you want to use, and grant read-only repository permissions for **Metadata**, **Issues**, and **Pull requests**. Paste it into **GitHub token** on the connection page and choose **Connect token**. No OAuth app credentials are needed for this option. Use GitHub's expiration setting and organization approval where required.
+
+Never put tokens or client secrets in `VITE_*` variables, source files, screenshots, or workspace backups. `.env` is ignored by Git. Tokens are sent to the backend once and held in an expiring server-memory session. The browser receives only an HttpOnly, SameSite cookie; credentials are not stored in localStorage or returned by the session API.
+
+### Repository workflow
+
+1. Select a repository from the paginated list, or enter an exact `owner/name` using **Link by name**. Repository search filters the current page. Linking verifies that your account can access it.
+2. Browse **Issues** and **Pull requests**, filter Open/Closed/All states, search the current page, or move through pages. **Refresh GitHub** fetches fresh data. Pull requests show open, closed, draft, or merged state and link to GitHub. Issues exclude pull requests; a page containing only PRs may be empty while later pages contain issues.
+3. Choose **Import issue** and review the copy. Import as a **Kanban task**, selecting a board and column, or as a **Bug report**. Closed issues default to a completed task column when available or a Closed bug; open issues default to an incomplete column or Open bug. Task completion always follows the selected column. Bug severity starts at Medium.
+4. Imported items keep their GitHub source link. Titles, descriptions, and labels are shortened to workspace limits when necessary; the import dialog explains this before saving. Each issue can be imported once per project across tasks and bugs, and existing items provide **Open imported task/bug** links. Deleting an imported item allows a fresh import.
+5. Imports are snapshots. Editing a local task or bug does not update GitHub, and refreshing GitHub does not overwrite local changes. This release does not create/close remote issues, merge pull requests, synchronize milestones, install webhooks, or automatically synchronize imported work.
+6. **Unlink repository** requires confirmation and keeps imported work and its source links. Reconnect or unlink/relink if a repository is renamed or access changes. **Disconnect GitHub** clears the shared browser session without deleting project data. It does not revoke the token or OAuth authorization at GitHub; manage revocation in GitHub settings.
+
+Repository links and source references are included in workspace JSON backups. Credentials and live repository lists are never exported. Older backups load normally without repository links. Imported tasks and bugs remain usable offline. Private repository content you import becomes part of your local workspace and its backups.
+
+Sessions expire after eight hours, on disconnect, or when the server restarts. A focus check refreshes connection state across tabs. Permission failures, expired credentials, unavailable repositories, rate limits, and network failures have recovery messages; no partial issue import occurs on a failed request. Tests use controlled GitHub responses and never require your credentials or modify a real repository. An actual GitHub sign-in requires your own app configuration or token.
+
+### Serving a build
+
+For a local production-bundle check, run `npm run build`, set `DEVORBIT_ORIGIN=http://localhost:3000`, and run `npm start`. Open `http://localhost:3000`. If testing OAuth here, configure its callback for port 3000. `npm run preview` also mounts the GitHub API; set the origin and callback to its port, normally 4173.
+
+For HTTPS hosting, run the Node server with `NODE_ENV=production`, an HTTPS `DEVORBIT_ORIGIN`, and a random `SESSION_SECRET` of at least 32 characters. The server refuses insecure production configuration. Generate a secret with the command in `.env.example`. Set `DEVORBIT_TRUST_PROXY=1` only behind exactly one trusted reverse proxy that supplies the original HTTPS protocol. The server binds to `127.0.0.1` by default; configure `HOST` and `PORT` for your deployment. Serve frontend and API on the same origin.
+
+This initial backend uses bounded, expiring sessions in a single process. Restarts require reconnection. A multi-instance deployment needs a shared session store and appropriate proxy/rate-limit configuration. This backend authenticates GitHub access; it does not move workspace data out of browser storage.
 
 ## Personalizing DevOrbit
 
@@ -80,24 +118,26 @@ npm ci
 npm run dev
 ```
 
-Vite prints the local development address. For a development container, use `npm run dev -- --host 0.0.0.0`. No environment variables or credentials are required.
+Vite prints the local development address. For a development container, use `npm run dev -- --host 0.0.0.0`. Core planning features need no credentials. GitHub integration requires your own GitHub connection; see **Connecting GitHub** above.
 
 If your environment has a read-only home directory, use a writable npm cache: `export npm_config_cache=/tmp/devorbit-npm-cache`.
 
 ## Development commands
 
-| Command                | Purpose                                                |
-| ---------------------- | ------------------------------------------------------ |
-| `npm run dev`          | Start Vite with fast refresh                           |
-| `npm run build`        | Type-check and create the production bundle in `dist/` |
-| `npm run preview`      | Serve the production build locally                     |
-| `npm run typecheck`    | Check TypeScript project references                    |
-| `npm run lint`         | ESLint with zero warnings permitted                    |
-| `npm run format`       | Format source and configuration with Prettier          |
-| `npm run format:check` | Check formatting without modifying files               |
-| `npm test`             | Playwright desktop and mobile Chromium checks          |
-| `npm run test:ui`      | Interactive Playwright test runner                     |
-| `npm run check`        | Lint, formatting, production build, and browser tests  |
+| Command                | Purpose                                                  |
+| ---------------------- | -------------------------------------------------------- |
+| `npm run dev`          | Start Vite and the GitHub backend with fast refresh      |
+| `npm run build`        | Type-check and create the production bundle in `dist/`   |
+| `npm run preview`      | Serve the production build and GitHub API locally        |
+| `npm start`            | Serve the built frontend and API with Node               |
+| `npm run test:server`  | Check authentication, API boundaries, and issue imports  |
+| `npm run typecheck`    | Check TypeScript project references                      |
+| `npm run lint`         | ESLint with zero warnings permitted                      |
+| `npm run format`       | Format source and configuration with Prettier            |
+| `npm run format:check` | Check formatting without modifying files                 |
+| `npm test`             | Playwright desktop and mobile Chromium checks            |
+| `npm run test:ui`      | Interactive Playwright test runner                       |
+| `npm run check`        | Lint, formatting, build, server tests, and browser tests |
 
 Before the first browser test run, install Chromium:
 
@@ -108,11 +148,17 @@ npm run check
 
 On Linux, Playwright may need system packages; use `npx playwright install --with-deps chromium` where supported. To reuse installed Chromium, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its absolute executable path instead. Tests start their own Vite server on port 4173 and use two workers. CI does not reuse an existing server.
 
-The browser suite covers homepage rendering/navigation and Kanban task creation/editing/moving/duplication/deletion, column customization and safe task migration, board/project isolation, filters, pointer and keyboard ordering, reload persistence, export/import validation, storage failure recovery, multi-tab updates, homepage progress, and mobile layouts. Personalization checks cover all seven accents in both themes, text contrast, live system appearance changes, keyboard controls, cross-tab updates, favicon/artwork changes, persistence, and storage recovery. Bug-tracking tests cover report lifecycle, direct URLs, search/filter/sort, project isolation, legacy backups, malformed imports, cross-tab conflicts, storage recovery, limits, and responsive themed layouts. Milestone tests cover linked work across boards and bugs, live progress, completion/reopening, safe deletion, local deadlines, filters, project isolation, backup compatibility, invalid references, cross-tab conflicts, storage recovery, limits, and mobile layouts. Tests use isolated browser contexts and do not change your personal workspace. Mobile tests emulate a Chromium device; they are not a substitute for testing Safari or physical devices.
+The browser suite covers homepage rendering/navigation and Kanban task creation/editing/moving/duplication/deletion, column customization and safe task migration, board/project isolation, filters, pointer and keyboard ordering, reload persistence, export/import validation, storage failure recovery, multi-tab updates, homepage progress, and mobile layouts. Personalization checks cover all seven accents in both themes, text contrast, live system appearance changes, keyboard controls, cross-tab updates, favicon/artwork changes, persistence, and storage recovery. Bug-tracking tests cover report lifecycle, direct URLs, search/filter/sort, project isolation, legacy backups, malformed imports, cross-tab conflicts, storage recovery, limits, and responsive themed layouts. Milestone tests cover linked work across boards and bugs, live progress, completion/reopening, safe deletion, local deadlines, filters, project isolation, backup compatibility, invalid references, cross-tab conflicts, storage recovery, limits, and mobile layouts. GitHub tests cover connection/disconnection, repository linking, pagination, issues/PRs, snapshot imports, duplicates, source links, backups, errors, recovery, and planned horizon details. Server tests verify OAuth state and PKCE, session rotation, CSRF rejection, API validation, permissions, rate limits, credentials, legacy backups, and import limits. Tests use isolated browser contexts and do not change your personal workspace. Mobile tests emulate a Chromium device; they are not a substitute for testing Safari or physical devices.
 
 ## Project structure
 
 ```text
+server/
+  app.ts                       # Session authentication, OAuth callbacks, read-only API
+  github.ts                    # GitHub requests and normalized responses
+  index.ts                     # Production frontend/API entry point
+  *.test.ts                    # Authentication, API, and import invariants
+shared/github.ts               # Repository/issue schemas and API types
 public/
   favicon.svg                  # Orbit brand mark
   images/devorbit-planet.png    # Original space artwork
@@ -150,6 +196,16 @@ src/
       RelatedMilestones.tsx   # Links back from task and bug details
       presentation.ts         # Status labels and local date formatting
       milestones.css          # Responsive milestone list, details, and editor
+    github/
+      GitHubPage.tsx          # Project repository connection and orchestration
+      ConnectionPanel.tsx    # OAuth and personal access token controls
+      RepositoryPicker.tsx   # Repository lookup, search, and pagination
+      RepositoryActivity.tsx # Issue and pull-request browsing
+      ImportIssue.tsx        # Reviewed task/bug import form
+      GitHubSource.tsx       # Links back to original issues
+      api.ts                 # API requests, cancellation, and loading/error state
+      import.ts              # Duplicate-safe local issue import
+      github.css             # Responsive connection and repository layout
     settings/
       SettingsPage.tsx        # Appearance controls and live preview
       AppearanceProvider.tsx  # Preferences, system detection, tab synchronization
@@ -169,12 +225,13 @@ tests/homepage.spec.ts          # Homepage regression checks
 tests/kanban.spec.ts            # Kanban workflows and persistence checks
 tests/bugs.spec.ts              # Bug lifecycle, isolation, backups, recovery checks
 tests/milestones.spec.ts        # Scope, progress, lifecycle, backups, recovery checks
+tests/github.spec.ts            # GitHub workflows and future horizon scope
 tests/settings.spec.ts          # Appearance, accent, persistence, and contrast checks
 ```
 
 Feature-specific components, types, and future API adapters live together. Broadly reusable UI lives in `components/`. The UI uses semantic HTML, visible keyboard focus, a skip link, native modal focus management, and reduced-motion support.
 
-React Router provides `/`, `/settings`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, `/projects/:projectId/bugs/:bugId`, `/milestones`, `/projects/:projectId/milestones`, and `/projects/:projectId/milestones/:milestoneId`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, reports, or milestones have recovery links.
+React Router provides `/`, `/settings`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, `/projects/:projectId/bugs/:bugId`, `/milestones`, `/projects/:projectId/milestones`, `/projects/:projectId/milestones/:milestoneId`, `/github`, and `/projects/:projectId/github`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, reports, or milestones have recovery links.
 
 The appearance provider applies CSS variables at the document root so all pages and modal dialogs share the same theme. Stored preferences apply before React mounts; the artwork is tinted through CSS and the favicon is updated with a local SVG data URL. No extra artwork downloads or external requests are needed when changing accents.
 
@@ -188,10 +245,12 @@ Typography uses self-hosted DM Sans and Manrope through Fontsource. Fonts and or
 - **Personalization (implemented):** Light/Dark/System modes, seven accents, matching planet artwork and tab icon, and browser-local preferences.
 - **Bug tracking (implemented):** project-scoped reports, severity, reproduction details, status lifecycle, filters, stable URLs, and local backups.
 - **Milestones (implemented):** project-scoped goals, linked Kanban tasks and bugs, live progress, target dates, lifecycle controls, and local backups.
-- **GitHub integration:** authenticated repositories, issues, and pull requests.
-- **Changelog generation:** editable release notes from completed work.
+- **GitHub integration (implemented):** OAuth/token connections, project repository links, issue and pull request browsing, and reviewed local issue imports.
+- **Changelog generation (planned):** editable release notes from completed work.
+- **Customizable Pomodoro Timer (planned):** personal focus sessions, breaks, and session rhythms.
+- **Gamification (planned):** Asteroid Escape, Lunar Landing, Orbit Architect, Gravity Golf, Cosmic Cleanup, Planet Pop, and Solar Surfer.
 
-Before adding cloud sync, establish server persistence and authentication. GitHub credentials must stay behind a backend or secure OAuth flow; never put secrets in `VITE_*` variables, which are bundled into the browser.
+Before adding cloud workspace sync, establish persistent workspace storage and DevOrbit account authentication. GitHub credentials already stay behind the backend; never expose secrets in the browser bundle.
 
 ## Contribution and ownership
 

@@ -11,7 +11,8 @@ import {
   Check,
   Circle,
   Flag,
-  GitBranch,
+  Timer,
+  Gamepad2,
   Github,
   Orbit,
   Rocket,
@@ -27,7 +28,7 @@ import { roadmap } from './data'
 import { ProjectCard } from './ProjectCard'
 import type { Project, ProjectStatus } from './types'
 
-const roadmapIcons = [GitBranch, Sparkles]
+const roadmapIcons = [Sparkles, Timer, Gamepad2]
 type Filter = 'All projects' | ProjectStatus
 
 export function Dashboard() {
@@ -287,6 +288,24 @@ export function Dashboard() {
         </div>
         <Link className="text-link" to="/milestones">
           Open milestones <ArrowUpRight size={15} />
+        </Link>
+      </section>
+      <section className="dashboard-bugs" aria-label="GitHub summary">
+        <span className="bug-stat-icon">
+          <Github size={20} />
+        </span>
+        <div>
+          <h2>Your code, in the same orbit.</h2>
+          <p>
+            {
+              workspace.projects.filter((project) => project.githubRepository)
+                .length
+            }{' '}
+            projects linked to GitHub repositories.
+          </p>
+        </div>
+        <Link className="text-link" to="/github">
+          Open GitHub integration <ArrowUpRight size={15} />
         </Link>
       </section>
       <div className="lower-grid">

@@ -1,4 +1,5 @@
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
+import { GitHubSource } from '../github/GitHubSource'
 import { RelatedMilestones } from '../milestones/RelatedMilestones'
 import { Link } from 'react-router-dom'
 import { bugStatuses, type BugReport } from '../workspace/model'
@@ -57,6 +58,7 @@ export function BugDetails({
         </div>
       </div>
       <RelatedMilestones bugId={bug.id} />
+      {bug.githubIssue && <GitHubSource source={bug.githubIssue} />}
       <div className="bug-detail-layout">
         <div className="bug-detail-content">
           {(

@@ -15,6 +15,8 @@ import { AppearanceProvider } from '../features/settings/AppearanceProvider'
 import { BugLanding, BugPage } from '../features/bugs/BugPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 
+const GitHubPage = lazy(() => import('../features/github/GitHubPage'))
+
 const MilestoneLanding = lazy(() =>
   import('../features/milestones/MilestonePage').then((module) => ({
     default: module.MilestoneLanding,
@@ -52,6 +54,11 @@ export function App() {
                 <Route
                   path="/projects/:projectId/milestones/:milestoneId"
                   element={<MilestonePage />}
+                />
+                <Route path="/github" element={<GitHubPage />} />
+                <Route
+                  path="/projects/:projectId/github"
+                  element={<GitHubPage />}
                 />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route
