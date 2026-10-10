@@ -17,6 +17,7 @@ import { useWorkspace } from '../workspace/context'
 import {
   boardPath,
   bugsPath,
+  milestonesPath,
   bugSeverities,
   bugStatuses,
   downloadWorkspace,
@@ -201,6 +202,9 @@ function BugView({ project, bugId }: { project: Project; bugId?: string }) {
         </select>
         <Link className="text-link bug-board-link" to={boardPath(project)}>
           Kanban board <ArrowUpRight size={14} />
+        </Link>
+        <Link className="text-link" to={milestonesPath(project)}>
+          Milestones
         </Link>
       </div>
       {bugId ? (

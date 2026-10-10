@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { RelatedMilestones } from '../milestones/RelatedMilestones'
 import { Modal } from '../../components/ui/Modal'
 import { newId, priorities, type Board, type Task } from '../workspace/model'
 
@@ -61,6 +62,7 @@ export function TaskEditor({
   return (
     <Modal title={task ? 'Edit task' : 'New task'} onClose={onClose}>
       <form onSubmit={submit} className="editor-form">
+        {task && <RelatedMilestones taskId={task.id} />}
         <label>
           Title
           <input

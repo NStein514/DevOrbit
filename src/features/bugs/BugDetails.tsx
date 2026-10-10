@@ -1,4 +1,5 @@
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
+import { RelatedMilestones } from '../milestones/RelatedMilestones'
 import { Link } from 'react-router-dom'
 import { bugStatuses, type BugReport } from '../workspace/model'
 import {
@@ -55,6 +56,7 @@ export function BugDetails({
           </button>
         </div>
       </div>
+      <RelatedMilestones bugId={bug.id} />
       <div className="bug-detail-layout">
         <div className="bug-detail-content">
           {(

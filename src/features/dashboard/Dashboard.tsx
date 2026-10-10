@@ -27,7 +27,7 @@ import { roadmap } from './data'
 import { ProjectCard } from './ProjectCard'
 import type { Project, ProjectStatus } from './types'
 
-const roadmapIcons = [Flag, GitBranch, Sparkles]
+const roadmapIcons = [GitBranch, Sparkles]
 type Filter = 'All projects' | ProjectStatus
 
 export function Dashboard() {
@@ -262,6 +262,33 @@ export function Dashboard() {
           Open bug tracking <ArrowUpRight size={15} />
         </Link>
       </section>
+      <section className="dashboard-bugs" aria-label="Milestone summary">
+        <span className="bug-stat-icon">
+          <Flag size={20} />
+        </span>
+        <div>
+          <h2>A destination for your next launch.</h2>
+          <p>
+            {workspace.projects.reduce(
+              (sum, project) =>
+                sum +
+                project.milestones.filter(
+                  (milestone) => milestone.status === 'completed',
+                ).length,
+              0,
+            )}{' '}
+            of{' '}
+            {workspace.projects.reduce(
+              (sum, project) => sum + project.milestones.length,
+              0,
+            )}{' '}
+            milestones completed.
+          </p>
+        </div>
+        <Link className="text-link" to="/milestones">
+          Open milestones <ArrowUpRight size={15} />
+        </Link>
+      </section>
       <div className="lower-grid">
         <section className="focus-panel" aria-labelledby="focus-title">
           <div className="panel-eyebrow">
@@ -360,6 +387,7 @@ export function Dashboard() {
               description,
               boards: [createBoard()],
               bugs: [],
+              milestones: [],
             }
             const saved = update((current) => ({
               ...current,

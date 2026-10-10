@@ -65,12 +65,34 @@ export const boardSchema = z.object({
   description: z.string().max(1000),
   columns: z.array(columnSchema).min(1).max(30),
 })
+export const milestoneStatuses = ['planned', 'active', 'completed'] as const
+export const milestoneSchema = z.object({
+  id,
+  title: name,
+  description: z.string().max(10000),
+  targetDate: z.union([z.iso.date(), z.literal('')]),
+  status: z.enum(milestoneStatuses),
+  taskIds: z.array(id).max(1000),
+  bugIds: z.array(id).max(1000),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  completedAt: z.union([z.iso.datetime(), z.literal('')]),
+})
+export type Milestone = z.infer<typeof milestoneSchema>
+export type MilestoneDraft = Pick<
+  Milestone,
+  'title' | 'description' | 'targetDate' | 'taskIds' | 'bugIds'
+>
+export const milestonesPath = (project: { id: string }) =>
+  `/projects/${project.id}/milestones`
+
 export const projectSchema = z.object({
   id,
   name,
   description: z.string().max(1000),
   // Older version 1 workspaces did not have bug reports.
   bugs: z.array(bugSchema).max(1000).default([]),
+  milestones: z.array(milestoneSchema).max(100).default([]),
   boards: z.array(boardSchema).min(1).max(30),
 })
 export const workspaceSchema = z
@@ -90,6 +112,50 @@ export const workspaceSchema = z
     }
     workspace.projects.forEach((project) => {
       unique(project.id)
+      const taskIds = new Set(
+        project.boards.flatMap((board) =>
+          board.columns.flatMap((column) =>
+            column.tasks.map((task) => task.id),
+          ),
+        ),
+      )
+      const bugIds = new Set(project.bugs.map((bug) => bug.id))
+      project.milestones.forEach((milestone) => {
+        unique(milestone.id)
+        if (
+          new Set(milestone.taskIds).size !== milestone.taskIds.length ||
+          new Set(milestone.bugIds).size !== milestone.bugIds.length
+        )
+          context.addIssue({
+            code: 'custom',
+            message: 'A milestone cannot link the same item twice.',
+          })
+        if (
+          milestone.taskIds.some((id) => !taskIds.has(id)) ||
+          milestone.bugIds.some((id) => !bugIds.has(id))
+        )
+          context.addIssue({
+            code: 'custom',
+            message:
+              'Milestone links must belong to the same project and reference existing work.',
+          })
+        if (
+          (milestone.status === 'completed') !==
+          Boolean(milestone.completedAt)
+        )
+          context.addIssue({
+            code: 'custom',
+            message: 'Milestone completion date must match its status.',
+          })
+        if (
+          milestone.status === 'completed' &&
+          milestoneProgress(project, milestone).remaining > 0
+        )
+          context.addIssue({
+            code: 'custom',
+            message: 'Complete all linked work before completing a milestone.',
+          })
+      })
       project.bugs.forEach((bug) => unique(bug.id))
       project.boards.forEach((board) => {
         unique(board.id)
@@ -161,6 +227,7 @@ export function createWorkspace(): Workspace {
         description: 'A calmer mission control for side projects.',
         boards: [board],
         bugs: [],
+        milestones: [],
       },
     ],
   }
@@ -199,4 +266,75 @@ export function downloadWorkspace(workspace: Workspace) {
   link.download = `devorbit-workspace-${new Date().toISOString().slice(0, 10)}.json`
   link.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+/** Progress is derived from live work, never a separately stored percentage. */
+export function milestoneProgress(project: Project, milestone: Milestone) {
+  const taskIds = new Set(milestone.taskIds)
+  const bugIds = new Set(milestone.bugIds)
+  const tasks = project.boards.flatMap((board) =>
+    board.columns.flatMap((column) =>
+      column.tasks
+        .filter((task) => taskIds.has(task.id))
+        .map((task) => ({ task, completed: column.completed })),
+    ),
+  )
+  const bugs = project.bugs.filter((bug) => bugIds.has(bug.id))
+  const taskDone = tasks.filter((item) => item.completed).length
+  const bugDone = bugs.filter((bug) => !isActiveBug(bug)).length
+  const total = tasks.length + bugs.length
+  const completed = taskDone + bugDone
+  return {
+    total,
+    completed,
+    remaining: total - completed,
+    percent: total ? Math.floor((completed / total) * 100) : 0,
+    taskTotal: tasks.length,
+    taskDone,
+    bugTotal: bugs.length,
+    bugDone,
+  }
+}
+
+/** Internal edits remove deleted links and reopen goals whose work is unfinished.
+ * Imports use strict validation instead, so invalid links are never silently dropped. */
+export function reconcileMilestones(workspace: Workspace): Workspace {
+  return {
+    ...workspace,
+    projects: workspace.projects.map((project) => {
+      const taskIds = new Set(
+        project.boards.flatMap((board) =>
+          board.columns.flatMap((column) =>
+            column.tasks.map((task) => task.id),
+          ),
+        ),
+      )
+      const bugIds = new Set(project.bugs.map((bug) => bug.id))
+      return {
+        ...project,
+        milestones: project.milestones.map((milestone) => {
+          const next = {
+            ...milestone,
+            taskIds: milestone.taskIds.filter((id) => taskIds.has(id)),
+            bugIds: milestone.bugIds.filter((id) => bugIds.has(id)),
+          }
+          const reopen =
+            next.status === 'completed' &&
+            milestoneProgress(project, next).remaining > 0
+          const changed =
+            reopen ||
+            next.taskIds.length !== milestone.taskIds.length ||
+            next.bugIds.length !== milestone.bugIds.length
+          return changed
+            ? {
+                ...next,
+                status: reopen ? 'active' : next.status,
+                completedAt: reopen ? '' : next.completedAt,
+                updatedAt: new Date().toISOString(),
+              }
+            : milestone
+        }),
+      }
+    }),
+  }
 }

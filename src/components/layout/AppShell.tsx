@@ -5,6 +5,7 @@ import {
   ArrowUpRight,
   Github,
   Bug,
+  Flag,
   LayoutDashboard,
   Layers3,
   Menu,
@@ -25,6 +26,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     pathname === '/boards' || /^\/projects\/[^/]+\/boards\//.test(pathname)
   const isBugs =
     pathname === '/bugs' || /^\/projects\/[^/]+\/bugs(?:\/|$)/.test(pathname)
+  const isMilestones =
+    pathname === '/milestones' ||
+    /^\/projects\/[^/]+\/milestones(?:\/|$)/.test(pathname)
   const isSettings = pathname === '/settings'
   const isOverview = pathname === '/'
   const { workspace } = useWorkspace()
@@ -94,6 +98,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Bug size={18} /> Bug tracking
             </Link>
+            <Link
+              className={`nav-link ${isMilestones ? 'active' : ''}`}
+              to="/milestones"
+              aria-current={isMilestones ? 'page' : undefined}
+            >
+              <Flag size={18} /> Milestones
+            </Link>
             <Link className="nav-link" to="/#roadmap">
               <Telescope size={18} />
               On the horizon
@@ -143,11 +154,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             <strong>
               {isSettings
                 ? 'Settings'
-                : isBugs
-                  ? 'Bug tracking'
-                  : isBoard
-                    ? 'Kanban boards'
-                    : 'Overview'}
+                : isMilestones
+                  ? 'Milestones'
+                  : isBugs
+                    ? 'Bug tracking'
+                    : isBoard
+                      ? 'Kanban boards'
+                      : 'Overview'}
             </strong>
           </div>
           <div className="topbar-right">

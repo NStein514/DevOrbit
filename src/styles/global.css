@@ -1485,3 +1485,32 @@ h1 > span {
     animation: none !important;
   }
 }
+
+.related-milestones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0;
+  font-size: 11px;
+}
+.related-milestones > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  margin-right: 4px;
+}
+.related-milestones a {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: 5px;
+  padding: 5px 8px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.kanban-task:target {
+  border-color: var(--accent-mark);
+  box-shadow: 0 0 0 2px var(--accent-border);
+}

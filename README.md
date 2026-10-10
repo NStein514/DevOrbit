@@ -4,11 +4,11 @@ A calmer mission control for individual developers and their side projects. A sp
 
 ## Current scope
 
-DevOrbit includes a responsive homepage, personalization settings, a customizable Kanban workspace, and project-level bug tracking built with React, TypeScript, and Vite. The homepage shows real project/task progress. Start with an empty DevOrbit project, or create your own projects and boards.
+DevOrbit includes a responsive homepage, personalization settings, a customizable Kanban workspace, project-level bug tracking, and milestones built with React, TypeScript, and Vite. The homepage shows real project/task progress and bug/milestone summaries. Start with an empty DevOrbit project, or create your own projects and boards.
 
 Kanban supports creating, renaming, and deleting projects and boards; custom column names, colors, ordering, completion states, and optional work-in-progress limits; and tasks with descriptions, priority, labels, and due dates. Drag tasks between columns, reorder tasks and columns, duplicate tasks, and search/filter work. Browser-local persistence and JSON backups are included.
 
-Milestones, GitHub integration, and changelog generation remain **planned**. There is no backend, authentication, or external API connection. GitHub links open this repository; they are not an account integration.
+GitHub integration and changelog generation remain **planned**. There is no backend, authentication, or external API connection. GitHub links open this repository; they are not an account integration.
 
 ## Using your Kanban workspace
 
@@ -30,11 +30,25 @@ Deleting a populated column moves its tasks to a destination you choose. Task, b
 4. Change status in the list or on the report: **Open → In progress → Resolved → Closed**. Resolved means the fix is ready to verify; close it after verification. You can reopen any report by selecting Open. Active counts include Open and In progress.
 5. Search across report references, titles, descriptions, reproduction details, environment, and labels. Combine status, severity, and label filters; sort by recent updates, report date, or highest severity. Clear filters to recover the full list.
 6. Delete a report from its detail page after confirmation. Deleting a report does not change Kanban tasks. Deleting a project also deletes its bug reports; the confirmation explains this.
-7. Export/import buttons on the issue list back up the **entire workspace**, including all projects, boards, tasks, and bug reports. Imports require confirmation before replacing existing data. A backup from before bug tracking is still accepted and contains no reports, so importing it also clears current reports.
+7. Export/import buttons on the issue list back up the **entire workspace**, including all projects, boards, tasks, bug reports, and milestones. Imports require confirmation before replacing existing data. A backup from before bug tracking is still accepted and contains no reports, so importing it also clears current reports.
 
 Bug reports use the existing browser storage and cross-tab synchronization. Existing workspaces load with an empty bug list without losing boards or tasks. A stale report editor warns if another tab changes or removes the report before saving; close and reopen it to edit the current version. There is a limit of 1,000 reports per project, 12 labels per report (30 characters each), 120 characters per title, 1,000 for environment details, and 10,000 for each detailed text field. Browser storage limits may be reached sooner; the storage notice provides a backup action.
 
 Bug tracking is local to your workspace. It does not yet synchronize with GitHub issues, attach files, or automatically create/move Kanban tasks. Share reports across devices by exporting and importing the workspace; a report URL alone does not transfer its data.
+
+## Planning milestones
+
+1. Open **Milestones** in the sidebar or mobile menu, or follow the Milestones link from a board or bug tracker. Select a project to see its goals. `/milestones` opens the first project's list; each milestone has a bookmarkable detail URL.
+2. Choose **New milestone**. Give it a name, describe the goal, and optionally set a target date. Link tasks from any board in that project and bug reports using the searchable work picker. Filter by Tasks, Bugs, or Selected only while keeping your selections.
+3. Open a milestone to see its scope, progress, and target date. Follow linked tasks to their board or bugs to their report. Task editors and bug details show links back to their milestones. **Edit milestone** or **Manage work** lets you revise the goal or change its scope.
+4. Use **Start milestone** to move from Planned to In progress. Progress is calculated from tasks in columns marked completed and bugs marked Resolved or Closed, with each item weighted equally. Completing all linked work enables **Complete milestone**; completion stays an explicit decision. Goals without linked work show “No work linked yet” and can be completed manually.
+5. Reopen completed milestones or return active ones to Planned. Reopening linked work, changing its column to incomplete, or adding unfinished work automatically reopens a completed milestone as In progress and clears its completion date.
+6. Search names/descriptions, filter by status or Overdue, and sort by target date or recent updates. Undated goals sort last by target date. Deadlines use your local calendar date: a goal due today is not overdue, and completed goals are never overdue.
+7. Delete milestones after confirmation without deleting their linked tasks or bugs. Deleting tasks, boards, or bugs removes those links and recalculates progress. Deleting a project also removes its milestones.
+
+A task or bug can belong to multiple milestones within its project. There is a limit of 100 milestones per project, 1,000 linked tasks and 1,000 linked bugs per milestone, 120 characters per name, and 10,000 per description. Milestones share workspace persistence, storage recovery, cross-tab synchronization, and JSON backups. Stale editors warn before overwriting another tab's milestone changes.
+
+Export/import buttons on the milestone list transfer the **entire workspace**. Older version 1 backups remain supported and load with no milestones; importing one replaces current data, including milestones. Invalid, duplicate, or cross-project work references are rejected. Milestone URLs identify browser-local data and do not share it across devices.
 
 ## Personalizing DevOrbit
 
@@ -94,7 +108,7 @@ npm run check
 
 On Linux, Playwright may need system packages; use `npx playwright install --with-deps chromium` where supported. To reuse installed Chromium, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its absolute executable path instead. Tests start their own Vite server on port 4173 and use two workers. CI does not reuse an existing server.
 
-The browser suite covers homepage rendering/navigation and Kanban task creation/editing/moving/duplication/deletion, column customization and safe task migration, board/project isolation, filters, pointer and keyboard ordering, reload persistence, export/import validation, storage failure recovery, multi-tab updates, homepage progress, and mobile layouts. Personalization checks cover all seven accents in both themes, text contrast, live system appearance changes, keyboard controls, cross-tab updates, favicon/artwork changes, persistence, and storage recovery. Bug-tracking tests cover report lifecycle, direct URLs, search/filter/sort, project isolation, legacy backups, malformed imports, cross-tab conflicts, storage recovery, limits, and responsive themed layouts. Tests use isolated browser contexts and do not change your personal workspace. Mobile tests emulate a Chromium device; they are not a substitute for testing Safari or physical devices.
+The browser suite covers homepage rendering/navigation and Kanban task creation/editing/moving/duplication/deletion, column customization and safe task migration, board/project isolation, filters, pointer and keyboard ordering, reload persistence, export/import validation, storage failure recovery, multi-tab updates, homepage progress, and mobile layouts. Personalization checks cover all seven accents in both themes, text contrast, live system appearance changes, keyboard controls, cross-tab updates, favicon/artwork changes, persistence, and storage recovery. Bug-tracking tests cover report lifecycle, direct URLs, search/filter/sort, project isolation, legacy backups, malformed imports, cross-tab conflicts, storage recovery, limits, and responsive themed layouts. Milestone tests cover linked work across boards and bugs, live progress, completion/reopening, safe deletion, local deadlines, filters, project isolation, backup compatibility, invalid references, cross-tab conflicts, storage recovery, limits, and mobile layouts. Tests use isolated browser contexts and do not change your personal workspace. Mobile tests emulate a Chromium device; they are not a substitute for testing Safari or physical devices.
 
 ## Project structure
 
@@ -127,6 +141,15 @@ src/
       BugDetails.tsx          # Bookmarkable reproduction details and properties
       presentation.ts         # Status/severity labels and report formatting
       bugs.css                # Responsive tracker, details, and dashboard summary
+    milestones/
+      MilestonePage.tsx       # Lazy-loaded project list, filters, routing, actions
+      MilestoneEditor.tsx     # Goal details and scope editing
+      MilestoneDetails.tsx    # Linked work, progress, deadlines, status controls
+      MilestoneCard.tsx       # Goal summary and accessible progress display
+      WorkPicker.tsx          # Searchable project task/bug selection
+      RelatedMilestones.tsx   # Links back from task and bug details
+      presentation.ts         # Status labels and local date formatting
+      milestones.css          # Responsive milestone list, details, and editor
     settings/
       SettingsPage.tsx        # Appearance controls and live preview
       AppearanceProvider.tsx  # Preferences, system detection, tab synchronization
@@ -145,12 +168,13 @@ src/
 tests/homepage.spec.ts          # Homepage regression checks
 tests/kanban.spec.ts            # Kanban workflows and persistence checks
 tests/bugs.spec.ts              # Bug lifecycle, isolation, backups, recovery checks
+tests/milestones.spec.ts        # Scope, progress, lifecycle, backups, recovery checks
 tests/settings.spec.ts          # Appearance, accent, persistence, and contrast checks
 ```
 
 Feature-specific components, types, and future API adapters live together. Broadly reusable UI lives in `components/`. The UI uses semantic HTML, visible keyboard focus, a skip link, native modal focus management, and reduced-motion support.
 
-React Router provides `/`, `/settings`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, and `/projects/:projectId/bugs/:bugId`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, or reports have recovery links.
+React Router provides `/`, `/settings`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, `/projects/:projectId/bugs/:bugId`, `/milestones`, `/projects/:projectId/milestones`, and `/projects/:projectId/milestones/:milestoneId`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, reports, or milestones have recovery links.
 
 The appearance provider applies CSS variables at the document root so all pages and modal dialogs share the same theme. Stored preferences apply before React mounts; the artwork is tinted through CSS and the favicon is updated with a local SVG data URL. No extra artwork downloads or external requests are needed when changing accents.
 
@@ -163,7 +187,7 @@ Typography uses self-hosted DM Sans and Manrope through Fontsource. Fonts and or
 - **Kanban boards (implemented):** project-scoped tasks, multiple boards, custom workflows, ordering, and local backups.
 - **Personalization (implemented):** Light/Dark/System modes, seven accents, matching planet artwork and tab icon, and browser-local preferences.
 - **Bug tracking (implemented):** project-scoped reports, severity, reproduction details, status lifecycle, filters, stable URLs, and local backups.
-- **Milestones:** scoped release goals and progress.
+- **Milestones (implemented):** project-scoped goals, linked Kanban tasks and bugs, live progress, target dates, lifecycle controls, and local backups.
 - **GitHub integration:** authenticated repositories, issues, and pull requests.
 - **Changelog generation:** editable release notes from completed work.
 

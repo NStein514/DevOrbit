@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { WorkspaceContext } from './context'
-import { createWorkspace, workspaceSchema, type Workspace } from './model'
+import {
+  createWorkspace,
+  reconcileMilestones,
+  workspaceSchema,
+  type Workspace,
+} from './model'
 
 const STORAGE_KEY = 'devorbit.workspace.v1'
 function load() {
@@ -67,7 +72,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }
   const update = (change: (workspace: Workspace) => Workspace) => {
     if (current.current.blocked) return false
-    return save(change(current.current.workspace))
+    return save(reconcileMilestones(change(current.current.workspace)))
   }
 
   return (

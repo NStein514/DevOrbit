@@ -31,6 +31,7 @@ export function TaskCard({
   const overdue = !!task.dueDate && task.dueDate < todayString && !completed
   return (
     <article
+      id={`task-${task.id}`}
       ref={setNodeRef}
       className={`kanban-task ${isDragging ? 'is-dragging' : ''}`}
       style={{ transform: CSS.Transform.toString(transform), transition }}

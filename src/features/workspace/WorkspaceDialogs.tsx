@@ -89,8 +89,8 @@ export function ImportWorkspace({
       <div className="editor-form">
         <p className="confirmation-copy">
           Restore a DevOrbit JSON backup. Importing replaces all projects,
-          boards, and bug reports in this browser. Export your current workspace
-          first if you want to keep it.
+          boards, bug reports, and milestones in this browser. Export your
+          current workspace first if you want to keep it.
         </p>
         <label>
           Workspace JSON file
@@ -139,7 +139,12 @@ export function ImportWorkspace({
                 (sum, project) => sum + project.bugs.length,
                 0,
               )}{' '}
-              bug reports found.
+              bug reports found ·{' '}
+              {candidate.projects.reduce(
+                (sum, project) => sum + project.milestones.length,
+                0,
+              )}{' '}
+              milestones found.
             </p>
             <label className="checkbox-label">
               <input

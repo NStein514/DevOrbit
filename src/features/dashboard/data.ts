@@ -1,12 +1,5 @@
 export const roadmap = [
   {
-    id: 'milestones',
-    title: 'Milestones',
-    description:
-      'Turn big goals into smaller launches. Group work into milestones and see what is left before release.',
-    caption: 'Big ambitions. Reachable checkpoints.',
-  },
-  {
     id: 'github',
     title: 'GitHub integration',
     description:
