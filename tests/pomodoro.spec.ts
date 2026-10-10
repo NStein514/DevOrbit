@@ -11,7 +11,8 @@ async function configure(page: Page) {
 test('customizes, pauses, navigates and reloads without losing elapsed time', async ({
   page,
 }) => {
-  await page.clock.install()
+  // Keep navigation and rendering time out of exact remaining-time assertions.
+  await page.clock.setFixedTime(new Date('2026-10-10T12:00:00Z'))
   await page.goto('/pomodoro')
   await configure(page)
   await page.getByLabel('What are you focusing on?').fill('Ship the timer')
@@ -20,10 +21,11 @@ test('customizes, pauses, navigates and reloads without losing elapsed time', as
     .selectOption({ label: 'DevOrbit' })
   await expect(page.getByRole('timer')).toHaveText('01:00')
   await page.getByRole('button', { name: 'Start', exact: true }).click()
-  await page.clock.runFor(12000)
+  await page.clock.setFixedTime(new Date('2026-10-10T12:00:12Z'))
+  await expect(page.getByRole('timer')).toHaveText('00:48')
   await page.getByRole('button', { name: 'Pause', exact: true }).click()
   await expect(page.getByRole('timer')).toHaveText('00:48')
-  await page.clock.runFor(10000)
+  await page.clock.setFixedTime(new Date('2026-10-10T12:00:22Z'))
   await expect(page.getByRole('timer')).toHaveText('00:48')
   await page.reload()
   await expect(page.getByRole('timer')).toHaveText('00:48')
@@ -35,7 +37,8 @@ test('customizes, pauses, navigates and reloads without losing elapsed time', as
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBeTruthy()
-  await page.clock.runFor(8000)
+  await page.clock.setFixedTime(new Date('2026-10-10T12:00:30Z'))
+  await expect(page.locator('.pomodoro-mini')).toContainText('00:40')
   await page.locator('.pomodoro-mini').click()
   await expect(page.getByRole('timer')).toHaveText('00:40')
   await page.reload()

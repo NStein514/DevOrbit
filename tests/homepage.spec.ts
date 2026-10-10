@@ -49,15 +49,15 @@ test('opens planned feature details and returns focus after Escape', async ({
   page,
 }) => {
   const trigger = page.getByRole('button', {
-    name: /Changelog generation/,
+    name: /More arcade games/,
   })
   await trigger.click()
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
   await expect(
-    dialog.getByRole('heading', { name: 'Changelog generation' }),
+    dialog.getByRole('heading', { name: 'More arcade games' }),
   ).toBeVisible()
-  await expect(dialog).toContainText('release notes')
+  await expect(dialog).toContainText('Lunar Landing')
   await page.keyboard.press('Escape')
   await expect(dialog).not.toBeVisible()
   await expect(trigger).toBeFocused()

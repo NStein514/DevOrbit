@@ -4,11 +4,11 @@ A calmer mission control for individual developers and their side projects. A sp
 
 ## Current scope
 
-DevOrbit includes a responsive homepage, personalization settings, a customizable Kanban workspace, project-level bug tracking, milestones, GitHub integration, and a customizable Pomodoro Timer built with React, TypeScript, and Vite. The homepage shows real project/task progress and bug/milestone summaries. Start with an empty DevOrbit project, or create your own projects and boards.
+DevOrbit includes a responsive homepage, personalization settings, a customizable Kanban workspace, project-level bug tracking, milestones, GitHub integration, changelog generation, and a customizable Pomodoro Timer built with React, TypeScript, and Vite. The homepage shows real project/task progress and bug/milestone summaries. Start with an empty DevOrbit project, or create your own projects and boards.
 
 Kanban supports creating, renaming, and deleting projects and boards; custom column names, colors, ordering, completion states, and optional work-in-progress limits; and tasks with descriptions, priority, labels, and due dates. Drag tasks between columns, reorder tasks and columns, duplicate tasks, and search/filter work. Browser-local persistence and JSON backups are included.
 
-Changelog generation and six additional arcade games remain **planned**. The Games arcade now includes Asteroid Escape. GitHub integration uses a small Node/Express backend for secure OAuth or personal access token sessions. Project data still lives in your browser; there is no DevOrbit account or cloud workspace sync.
+Six additional arcade games remain **planned**. The Games arcade now includes Asteroid Escape. GitHub integration uses a small Node/Express backend for secure OAuth or personal access token sessions. Project data still lives in your browser; there is no DevOrbit account or cloud workspace sync.
 
 ## Games arcade and Asteroid Escape
 
@@ -117,6 +117,23 @@ For HTTPS hosting, run the Node server with `NODE_ENV=production`, an HTTPS `DEV
 
 This initial backend uses bounded, expiring sessions in a single process. Restarts require reconnection. A multi-instance deployment needs a shared session store and appropriate proxy/rate-limit configuration. This backend authenticates GitHub access; it does not move workspace data out of browser storage.
 
+## Generating changelogs
+
+1. Open **Changelogs** in the sidebar or use a project's Changelogs link. `/changelog` opens the first project's history; each entry has a bookmarkable URL. Histories are isolated by project.
+2. Choose **Generate changelog**. Enter a release name, version (such as `v1.0.0` or `October preview`), and release date. Versions must be unique within a project, ignoring case and surrounding whitespace. The date defaults to today in your local timezone.
+3. Choose all completed project work or a milestone's scope. Only tasks in completed columns and bugs marked Resolved or Closed are eligible. Work already included in a **released** changelog is hidden by default; enable **Include previously released work** to deliberately reuse it. Drafts do not reserve work. Eligibility uses source IDs, not completion dates or Git commit history.
+4. Select individual items or **Select shown** to select the current search results. Searching preserves selections; changing scope or the previously released toggle clears them. Tasks default to **Changed** and bugs to **Fixed**. Each selected item's category can be **Added**, **Changed**, **Fixed**, **Removed**, **Security**, or **Other**.
+5. **Generate draft** creates grouped Markdown from selected work titles, with GitHub issue links where available. Descriptions are not copied. With nothing selected, **Create empty draft** starts a handwritten release. The generator checks that selected work still exists and is complete when saving.
+6. **Edit changelog** revises the name, version, date, and Markdown notes. **Show preview** renders headings, lists, tables, code, and safe links. Raw HTML and remote images are not rendered. Saving protects against changes in another tab; close and reopen a stale editor to use the current version.
+7. After reviewing nonempty notes, choose **Mark as released** and confirm. This records a release locally and includes it in combined exports; it does not publish to GitHub. Released entries are read-only until you confirm **Return to draft**, which removes them from released exports and makes their selected work eligible again.
+8. **Copy Markdown** or **Download Markdown** shares an individual entry including its version, date, title, and notes. Download remains available if clipboard access is denied. **Export released notes** creates `CHANGELOG.md` with released entries ordered by release date, newest first. Drafts are excluded.
+
+Notes and selected-work references are snapshots captured when a draft is generated. Later edits, reopening, or deletion of source work do not rewrite history. The detail page retains original titles and links to surviving tasks and bugs; removed sources are labeled. Editing Markdown does not change selection history or the work counted as included in that release. To generate from a different selection, create a new draft. Deleting a changelog requires confirmation, preserves tasks/bugs/milestones, and removes that entry's record of released work. Deleting a project also deletes its changelog history.
+
+Search by version, title, or notes; filter Draft/Released; sort by release date or recent edits. Project limits are 100 changelogs, 1,000 selected work items per changelog, 120 characters per name, 60 per version, and 100,000 per Markdown body. If generated notes exceed the limit, select fewer items. Browser storage capacity may be reached sooner; use the storage notice to export unsaved work before leaving.
+
+Workspace JSON backups include changelogs and their source snapshots. Older version 1 backups load with empty changelog histories; importing replaces the complete workspace. Markdown downloads share notes and are not restorable backups. Generation runs locally without GitHub credentials or external publishing calls. GitHub issue references come from previously imported issues.
+
 ## Personalizing DevOrbit
 
 Open **Settings** in the sidebar (or the mobile navigation menu), then **Personalization**. You can also open `/settings` directly.
@@ -177,7 +194,7 @@ npm run check
 
 On Linux, Playwright may need system packages; use `npx playwright install --with-deps chromium` where supported. To reuse installed Chromium, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its absolute executable path instead. Tests start their own Vite server on port 4173 and use two workers. CI does not reuse an existing server.
 
-The browser suite covers homepage rendering/navigation and Kanban task creation/editing/moving/duplication/deletion, column customization and safe task migration, board/project isolation, filters, pointer and keyboard ordering, reload persistence, export/import validation, storage failure recovery, multi-tab updates, homepage progress, and mobile layouts. Personalization checks cover all seven accents in both themes, text contrast, live system appearance changes, keyboard controls, cross-tab updates, favicon/artwork changes, persistence, and storage recovery. Bug-tracking tests cover report lifecycle, direct URLs, search/filter/sort, project isolation, legacy backups, malformed imports, cross-tab conflicts, storage recovery, limits, and responsive themed layouts. Milestone tests cover linked work across boards and bugs, live progress, completion/reopening, safe deletion, local deadlines, filters, project isolation, backup compatibility, invalid references, cross-tab conflicts, storage recovery, limits, and mobile layouts. GitHub tests cover connection/disconnection, repository linking, pagination, issues/PRs, snapshot imports, duplicates, source links, backups, errors, recovery, and planned horizon details. Server tests verify OAuth state and PKCE, session rotation, CSRF rejection, API validation, permissions, rate limits, credentials, legacy backups, and import limits. Tests use isolated browser contexts and do not change your personal workspace. Mobile tests emulate a Chromium device; they are not a substitute for testing Safari or physical devices.
+The browser suite covers homepage rendering/navigation and Kanban task creation/editing/moving/duplication/deletion, column customization and safe task migration, board/project isolation, filters, pointer and keyboard ordering, reload persistence, export/import validation, storage failure recovery, multi-tab updates, homepage progress, and mobile layouts. Personalization checks cover all seven accents in both themes, text contrast, live system appearance changes, keyboard controls, cross-tab updates, favicon/artwork changes, persistence, and storage recovery. Bug-tracking tests cover report lifecycle, direct URLs, search/filter/sort, project isolation, legacy backups, malformed imports, cross-tab conflicts, storage recovery, limits, and responsive themed layouts. Milestone tests cover linked work across boards and bugs, live progress, completion/reopening, safe deletion, local deadlines, filters, project isolation, backup compatibility, invalid references, cross-tab conflicts, storage recovery, limits, and mobile layouts. GitHub tests cover connection/disconnection, repository linking, pagination, issues/PRs, snapshot imports, duplicates, source links, backups, errors, recovery, and planned horizon details. Server tests verify OAuth state and PKCE, session rotation, CSRF rejection, API validation, permissions, rate limits, credentials, legacy backups, and import limits. Changelog checks cover work selection, categories, milestone scope, Markdown safety, drafts/releases, snapshots, copying/downloads, version conflicts, concurrent edits, deletion, storage recovery, and backup compatibility. Tests use isolated browser contexts and do not change your personal workspace. Mobile tests emulate a Chromium device; they are not a substitute for testing Safari or physical devices.
 
 ## Project structure
 
@@ -225,6 +242,14 @@ src/
       RelatedMilestones.tsx   # Links back from task and bug details
       presentation.ts         # Status labels and local date formatting
       milestones.css          # Responsive milestone list, details, and editor
+    changelog/
+      ChangelogPage.tsx       # Project history, filters, lifecycle, and backups
+      ChangelogGenerator.tsx  # Completed work and milestone scope selection
+      ChangelogEditor.tsx     # Metadata and Markdown editing with preview
+      ChangelogDetails.tsx    # Release notes, snapshots, copy, and download
+      MarkdownPreview.tsx     # Markdown rendering without HTML or remote images
+      generation.ts          # Generation, validation, snapshots, and exports
+      changelog.css          # Responsive history, detail, generator, and editor
     github/
       GitHubPage.tsx          # Project repository connection and orchestration
       ConnectionPanel.tsx    # OAuth and personal access token controls
@@ -269,6 +294,8 @@ tests/kanban.spec.ts            # Kanban workflows and persistence checks
 tests/bugs.spec.ts              # Bug lifecycle, isolation, backups, recovery checks
 tests/milestones.spec.ts        # Scope, progress, lifecycle, backups, recovery checks
 tests/github.spec.ts            # GitHub workflows and future horizon scope
+tests/changelog.spec.ts         # Generation, lifecycle, snapshots, exports, and recovery
+tests/changelog.fixture.ts      # Shared completed-work fixtures
 tests/settings.spec.ts          # Appearance, accent, persistence, and contrast checks
 tests/pomodoro.spec.ts          # Timing, cadence, persistence, recovery, mobile checks
 tests/games.spec.ts             # Arcade, input, pause, records, assets, timed breaks
@@ -277,7 +304,7 @@ tests/game-engine.spec.ts       # Deterministic movement, collision, heat, spawn
 
 Feature-specific components, types, and future API adapters live together. Broadly reusable UI lives in `components/`. The UI uses semantic HTML, visible keyboard focus, a skip link, native modal focus management, and reduced-motion support.
 
-React Router provides `/`, `/settings`, `/pomodoro`, `/games`, `/games/asteroid-escape`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, `/projects/:projectId/bugs/:bugId`, `/milestones`, `/projects/:projectId/milestones`, `/projects/:projectId/milestones/:milestoneId`, `/github`, and `/projects/:projectId/github`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, reports, or milestones have recovery links.
+React Router provides `/`, `/settings`, `/pomodoro`, `/games`, `/games/asteroid-escape`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, `/projects/:projectId/bugs/:bugId`, `/milestones`, `/projects/:projectId/milestones`, `/projects/:projectId/milestones/:milestoneId`, `/github`, `/projects/:projectId/github`, `/changelog`, `/projects/:projectId/changelog`, and `/projects/:projectId/changelog/:changelogId`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, reports, milestones, or changelogs have recovery links.
 
 The appearance provider applies CSS variables at the document root so all pages and modal dialogs share the same theme. Stored preferences apply before React mounts; the artwork is tinted through CSS and the favicon is updated with a local SVG data URL. No extra artwork downloads or external requests are needed when changing accents.
 
@@ -292,7 +319,7 @@ Typography uses self-hosted DM Sans and Manrope through Fontsource. Fonts and or
 - **Bug tracking (implemented):** project-scoped reports, severity, reproduction details, status lifecycle, filters, stable URLs, and local backups.
 - **Milestones (implemented):** project-scoped goals, linked Kanban tasks and bugs, live progress, target dates, lifecycle controls, and local backups.
 - **GitHub integration (implemented):** OAuth/token connections, project repository links, issue and pull request browsing, and reviewed local issue imports.
-- **Changelog generation (planned):** editable release notes from completed work.
+- **Changelog generation (implemented):** completed-work selection, editable Markdown, local draft/release history, historical snapshots, and individual/combined exports.
 - **Customizable Pomodoro Timer (implemented):** adjustable focus/break durations, session cadence, automatic starts, sound/volume, daily goals, project intentions, and persistent session history.
 - **Games arcade / Asteroid Escape (implemented):** keyboard/touch survival game, original generated art, energy/heat tradeoffs, personal records, and Pomodoro break play.
 - **More arcade games (planned):** Lunar Landing, Orbit Architect, Gravity Golf, Cosmic Cleanup, Planet Pop, and Solar Surfer.

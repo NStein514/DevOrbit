@@ -130,6 +130,7 @@ function GitHubProject({ project }: { project: Project }) {
         <div className="github-context-links">
           <Link to={boardPath(project)}>Kanban board</Link>
           <Link to={bugsPath(project)}>Bug tracking</Link>
+          <Link to={`/projects/${project.id}/changelog`}>Changelogs</Link>
         </div>
       </div>
       <div className="page-heading">

@@ -7,6 +7,7 @@ import '../../features/pomodoro/pomodoro.css'
 import {
   ArrowUpRight,
   Github,
+  FileText,
   Bug,
   Flag,
   LayoutDashboard,
@@ -36,6 +37,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     /^\/projects\/[^/]+\/milestones(?:\/|$)/.test(pathname)
   const isGitHub =
     pathname === '/github' || /^\/projects\/[^/]+\/github$/.test(pathname)
+  const isChangelog =
+    pathname === '/changelog' ||
+    /^\/projects\/[^/]+\/changelog(?:\/|$)/.test(pathname)
   const isSettings = pathname === '/settings'
   const isPomodoro = pathname === '/pomodoro'
   const isGames = pathname === '/games' || pathname.startsWith('/games/')
@@ -122,6 +126,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Github size={18} /> GitHub integration
             </Link>
+            <Link
+              className={`nav-link ${isChangelog ? 'active' : ''}`}
+              to="/changelog"
+              aria-current={isChangelog ? 'page' : undefined}
+            >
+              <FileText size={18} /> Changelogs
+            </Link>
             <Link className="nav-link" to="/#roadmap">
               <Telescope size={18} />
               On the horizon
@@ -183,21 +194,23 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="breadcrumb">
             Workspace<span>/</span>
             <strong>
-              {isGames
-                ? 'Games arcade'
-                : isPomodoro
-                  ? 'Pomodoro Timer'
-                  : isGitHub
-                    ? 'GitHub integration'
-                    : isSettings
-                      ? 'Settings'
-                      : isMilestones
-                        ? 'Milestones'
-                        : isBugs
-                          ? 'Bug tracking'
-                          : isBoard
-                            ? 'Kanban boards'
-                            : 'Overview'}
+              {isChangelog
+                ? 'Changelogs'
+                : isGames
+                  ? 'Games arcade'
+                  : isPomodoro
+                    ? 'Pomodoro Timer'
+                    : isGitHub
+                      ? 'GitHub integration'
+                      : isSettings
+                        ? 'Settings'
+                        : isMilestones
+                          ? 'Milestones'
+                          : isBugs
+                            ? 'Bug tracking'
+                            : isBoard
+                              ? 'Kanban boards'
+                              : 'Overview'}
             </strong>
           </div>
           <div className="topbar-right">

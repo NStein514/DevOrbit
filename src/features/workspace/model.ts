@@ -92,6 +92,68 @@ export type MilestoneDraft = Pick<
 export const milestonesPath = (project: { id: string }) =>
   `/projects/${project.id}/milestones`
 
+export const changelogCategories = [
+  'Added',
+  'Changed',
+  'Fixed',
+  'Removed',
+  'Security',
+  'Other',
+] as const
+export const changelogSourceSchema = z.object({
+  kind: z.enum(['task', 'bug']),
+  id,
+  title: name,
+  category: z.enum(changelogCategories),
+  githubIssue: issueRefSchema.optional(),
+})
+export const changelogSchema = z
+  .object({
+    id,
+    title: name,
+    version: z
+      .string()
+      .trim()
+      .min(1)
+      .max(60)
+      .regex(/^[^\r\n]+$/),
+    releaseDate: z.iso.date(),
+    notes: z.string().max(100000),
+    status: z.enum(['draft', 'released']),
+    sources: z.array(changelogSourceSchema).max(1000),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    releasedAt: z.union([z.iso.datetime(), z.literal('')]),
+  })
+  .superRefine((entry, context) => {
+    if ((entry.status === 'released') !== Boolean(entry.releasedAt))
+      context.addIssue({
+        code: 'custom',
+        message: 'Changelog release timestamp must match its status.',
+      })
+    if (entry.status === 'released' && !entry.notes.trim())
+      context.addIssue({
+        code: 'custom',
+        message: 'Released changelogs need release notes.',
+      })
+    if (
+      new Set(entry.sources.map((source) => `${source.kind}:${source.id}`))
+        .size !== entry.sources.length
+    )
+      context.addIssue({
+        code: 'custom',
+        message: 'A changelog cannot include the same work item twice.',
+      })
+  })
+export type Changelog = z.infer<typeof changelogSchema>
+export type ChangelogSource = z.infer<typeof changelogSourceSchema>
+export type ChangelogDraft = Pick<
+  Changelog,
+  'title' | 'version' | 'releaseDate' | 'notes'
+>
+export const changelogPath = (project: { id: string }) =>
+  `/projects/${project.id}/changelog`
+
 export const projectSchema = z.object({
   id,
   githubRepository: repositoryRefSchema.optional(),
@@ -100,6 +162,7 @@ export const projectSchema = z.object({
   // Older version 1 workspaces did not have bug reports.
   bugs: z.array(bugSchema).max(1000).default([]),
   milestones: z.array(milestoneSchema).max(100).default([]),
+  changelogs: z.array(changelogSchema).max(100).default([]),
   boards: z.array(boardSchema).min(1).max(30),
 })
 export const workspaceSchema = z
@@ -119,6 +182,17 @@ export const workspaceSchema = z
     }
     workspace.projects.forEach((project) => {
       unique(project.id)
+      const versions = new Set<string>()
+      project.changelogs.forEach((entry) => {
+        unique(entry.id)
+        const version = entry.version.toLowerCase()
+        if (versions.has(version))
+          context.addIssue({
+            code: 'custom',
+            message: 'Changelog versions must be unique within a project.',
+          })
+        versions.add(version)
+      })
       const taskIds = new Set(
         project.boards.flatMap((board) =>
           board.columns.flatMap((column) =>
@@ -235,6 +309,7 @@ export function createWorkspace(): Workspace {
         boards: [board],
         bugs: [],
         milestones: [],
+        changelogs: [],
       },
     ],
   }

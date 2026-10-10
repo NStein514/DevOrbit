@@ -1,12 +1,5 @@
 export const roadmap = [
   {
-    id: 'changelog',
-    title: 'Changelog generation',
-    description:
-      'Turn completed work into readable release notes. Review and edit each changelog before publishing.',
-    caption: 'Every little launch deserves a story.',
-  },
-  {
     id: 'gamification',
     title: 'More arcade games',
     description:

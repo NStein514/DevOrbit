@@ -11,6 +11,7 @@ import {
   Check,
   Circle,
   Flag,
+  FileText,
   Timer,
   Gamepad2,
   Github,
@@ -28,7 +29,7 @@ import { roadmap } from './data'
 import { ProjectCard } from './ProjectCard'
 import type { Project, ProjectStatus } from './types'
 
-const roadmapIcons = [Sparkles, Gamepad2]
+const roadmapIcons = [Gamepad2]
 type Filter = 'All projects' | ProjectStatus
 
 export function Dashboard() {
@@ -323,6 +324,28 @@ export function Dashboard() {
           Open Games arcade <ArrowUpRight size={15} />
         </Link>
       </section>
+      <section className="dashboard-bugs" aria-label="Changelog summary">
+        <span className="bug-stat-icon">
+          <FileText size={20} />
+        </span>
+        <div>
+          <h2>Every launch has a story.</h2>
+          <p>
+            {workspace.projects.reduce(
+              (sum, project) =>
+                sum +
+                project.changelogs.filter(
+                  (entry) => entry.status === 'released',
+                ).length,
+              0,
+            )}{' '}
+            releases recorded across your projects.
+          </p>
+        </div>
+        <Link className="text-link" to="/changelog">
+          Open changelogs <ArrowUpRight size={15} />
+        </Link>
+      </section>
       <div className="lower-grid">
         <section className="focus-panel" aria-labelledby="focus-title">
           <div className="panel-eyebrow">
@@ -422,6 +445,7 @@ export function Dashboard() {
               boards: [createBoard()],
               bugs: [],
               milestones: [],
+              changelogs: [],
             }
             const saved = update((current) => ({
               ...current,
