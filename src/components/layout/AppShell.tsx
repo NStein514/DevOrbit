@@ -133,10 +133,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <FileText size={18} /> Changelogs
             </Link>
-            <Link className="nav-link" to="/#roadmap">
-              <Telescope size={18} />
-              On the horizon
-              <ArrowUpRight size={14} className="nav-end" />
+            <Link
+              className={`nav-link ${isPomodoro ? 'active' : ''}`}
+              to="/pomodoro"
+              aria-current={isPomodoro ? 'page' : undefined}
+            >
+              <Timer size={18} /> Pomodoro Timer
             </Link>
             <Link
               className={`nav-link ${isGames ? 'active' : ''}`}
@@ -146,19 +148,17 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Gamepad2 size={18} /> Games arcade
             </Link>
             <Link
-              className={`nav-link ${isPomodoro ? 'active' : ''}`}
-              to="/pomodoro"
-              aria-current={isPomodoro ? 'page' : undefined}
-            >
-              <Timer size={18} /> Pomodoro Timer
-            </Link>
-            <Link
               className={`nav-link ${isSettings ? 'active' : ''}`}
               to="/settings"
               aria-current={isSettings ? 'page' : undefined}
             >
               <Settings size={18} />
               Settings{isSettings && <span className="nav-active-dot" />}
+            </Link>
+            <Link className="nav-link" to="/#roadmap">
+              <Telescope size={18} />
+              On the horizon
+              <ArrowUpRight size={14} className="nav-end" />
             </Link>
           </nav>
           <div className="sidebar-bottom">
