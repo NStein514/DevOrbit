@@ -8,7 +8,23 @@ DevOrbit includes a responsive homepage, personalization settings, a customizabl
 
 Kanban supports creating, renaming, and deleting projects and boards; custom column names, colors, ordering, completion states, and optional work-in-progress limits; and tasks with descriptions, priority, labels, and due dates. Drag tasks between columns, reorder tasks and columns, duplicate tasks, and search/filter work. Browser-local persistence and JSON backups are included.
 
-Changelog generation and Gamification remain **planned**. GitHub integration uses a small Node/Express backend for secure OAuth or personal access token sessions. Project data still lives in your browser; there is no DevOrbit account or cloud workspace sync.
+Changelog generation and six additional arcade games remain **planned**. The Games arcade now includes Asteroid Escape. GitHub integration uses a small Node/Express backend for secure OAuth or personal access token sessions. Project data still lives in your browser; there is no DevOrbit account or cloud workspace sync.
+
+## Games arcade and Asteroid Escape
+
+Open **Games arcade** from the sidebar, mobile navigation, or dashboard, or visit `/games`. **Asteroid Escape** is the first playable game; the other six game cards are explicitly marked as upcoming. Its direct URL is `/games/asteroid-escape`.
+
+- Pilot a ship through an endless asteroid field using **arrow keys / WASD**, mouse dragging, finger dragging, or the four hold-to-steer buttons. On touch screens the ship follows above your finger. Controls operate inside the game without intercepting keyboard input elsewhere. The same fixed simulation space and movement speed apply on desktop and mobile.
+- The ship starts with three hull points. Asteroid hits cost one hull point, add heat, and briefly protect against another hit. Losing all hull points ends the flight. Asteroid speed and density gradually increase.
+- Reactor heat rises continuously. Energy orbs cool it by **24 percentage points** and award **75 points**, creating a choice between safe gaps and detours for cooling. Reaching **100% heat** ends the flight. Survival earns **10 points per second**.
+- **Pause**, **P**, or **Escape** freezes the game; **Resume flight** continues. Hiding the tab, losing window focus, leaving the game controls, or a long rendering interruption pauses automatically. Reduced-motion preferences disable background drift and asteroid rotation. **End flight** banks the result; **Fly again** starts a fresh run. Navigating away or reloading discards an unfinished flight.
+- Personal best score, longest survival, and finished-run count are saved under `devorbit.arcade.v1` in browser localStorage, separately from project backups. The best score appears in the arcade and game. Invalid saved data is preserved; unavailable storage shows a warning and allows play with in-memory records for the current visit. Scores are local, with no account, leaderboard, or external game service.
+
+For a timed game break, open **Pomodoro Timer**, set **Break activity → Play Asteroid Escape**, and **Save preferences**. A **Play this break** link appears during short or long breaks. Choosing it starts/resumes the selected break timer and opens `/games/asteroid-escape?mode=break`; launching the ship remains an explicit action. Active breaks also have a shortcut from the arcade. Older timer preferences default to **Quiet break** without losing settings or history.
+
+Break play requires a running break. Pausing the Pomodoro pauses the game, and completing/skipping a break ends the flight and offers **Return to focus**, even if the game itself was paused. The Pomodoro keeps counting while gameplay is paused. Free play remains independent of the timer and has no time limit. Games never start automatically or take over a focus session.
+
+All four game art assets were created specifically for this feature using the built-in image generation tool with Image Generator 2.0 requested: the nebula, spaceship, asteroid, and cooling orb. Original PNG files, including sprite transparency, live in `public/images/arcade/`; `artwork.json` records the exact generation prompts. The arcade cover composes those same assets. UI controls use the project's existing icon library. Artwork loads locally, with a retry action if loading fails.
 
 ## Customizable Pomodoro Timer
 
@@ -231,6 +247,14 @@ src/
       model.ts               # Validated timer state and session cadence
       context.ts             # Shared timer context and hook
       pomodoro.css           # Responsive, theme-aware timer layout
+    games/
+      ArcadePage.tsx         # Arcade catalog, personal best, and break entry
+      AsteroidEscapePage.tsx # Canvas lifecycle, controls, HUD, and break boundary
+      engine.ts              # Fixed-step movement, hazards, heat, pickups, scoring
+      render.ts              # Generated sprite rendering and reduced motion
+      art.ts                 # Local asset loading and retry boundary
+      records.ts             # Validated browser-local arcade records
+      games.css              # Responsive arcade and cockpit styling
     workspace/
       model.ts                # Versioned Zod schemas and domain helpers
       context.ts              # Workspace context and typed hook
@@ -247,11 +271,13 @@ tests/milestones.spec.ts        # Scope, progress, lifecycle, backups, recovery 
 tests/github.spec.ts            # GitHub workflows and future horizon scope
 tests/settings.spec.ts          # Appearance, accent, persistence, and contrast checks
 tests/pomodoro.spec.ts          # Timing, cadence, persistence, recovery, mobile checks
+tests/games.spec.ts             # Arcade, input, pause, records, assets, timed breaks
+tests/game-engine.spec.ts       # Deterministic movement, collision, heat, spawn checks
 ```
 
 Feature-specific components, types, and future API adapters live together. Broadly reusable UI lives in `components/`. The UI uses semantic HTML, visible keyboard focus, a skip link, native modal focus management, and reduced-motion support.
 
-React Router provides `/`, `/settings`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, `/projects/:projectId/bugs/:bugId`, `/milestones`, `/projects/:projectId/milestones`, `/projects/:projectId/milestones/:milestoneId`, `/github`, and `/projects/:projectId/github`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, reports, or milestones have recovery links.
+React Router provides `/`, `/settings`, `/pomodoro`, `/games`, `/games/asteroid-escape`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, `/projects/:projectId/bugs/:bugId`, `/milestones`, `/projects/:projectId/milestones`, `/projects/:projectId/milestones/:milestoneId`, `/github`, and `/projects/:projectId/github`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, reports, or milestones have recovery links.
 
 The appearance provider applies CSS variables at the document root so all pages and modal dialogs share the same theme. Stored preferences apply before React mounts; the artwork is tinted through CSS and the favicon is updated with a local SVG data URL. No extra artwork downloads or external requests are needed when changing accents.
 
@@ -268,7 +294,8 @@ Typography uses self-hosted DM Sans and Manrope through Fontsource. Fonts and or
 - **GitHub integration (implemented):** OAuth/token connections, project repository links, issue and pull request browsing, and reviewed local issue imports.
 - **Changelog generation (planned):** editable release notes from completed work.
 - **Customizable Pomodoro Timer (implemented):** adjustable focus/break durations, session cadence, automatic starts, sound/volume, daily goals, project intentions, and persistent session history.
-- **Gamification (planned):** Asteroid Escape, Lunar Landing, Orbit Architect, Gravity Golf, Cosmic Cleanup, Planet Pop, and Solar Surfer.
+- **Games arcade / Asteroid Escape (implemented):** keyboard/touch survival game, original generated art, energy/heat tradeoffs, personal records, and Pomodoro break play.
+- **More arcade games (planned):** Lunar Landing, Orbit Architect, Gravity Golf, Cosmic Cleanup, Planet Pop, and Solar Surfer.
 
 Before adding cloud workspace sync, establish persistent workspace storage and DevOrbit account authentication. GitHub credentials already stay behind the backend; never expose secrets in the browser bundle.
 

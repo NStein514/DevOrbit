@@ -19,6 +19,7 @@ import {
   Telescope,
   X,
   Timer,
+  Gamepad2,
 } from 'lucide-react'
 
 export const REPOSITORY_URL = 'https://github.com/NStein514/DevOrbit'
@@ -37,6 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     pathname === '/github' || /^\/projects\/[^/]+\/github$/.test(pathname)
   const isSettings = pathname === '/settings'
   const isPomodoro = pathname === '/pomodoro'
+  const isGames = pathname === '/games' || pathname.startsWith('/games/')
   const pomodoro = usePomodoro()
   const isOverview = pathname === '/'
   const { workspace } = useWorkspace()
@@ -126,6 +128,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               <ArrowUpRight size={14} className="nav-end" />
             </Link>
             <Link
+              className={`nav-link ${isGames ? 'active' : ''}`}
+              to="/games"
+              aria-current={isGames ? 'page' : undefined}
+            >
+              <Gamepad2 size={18} /> Games arcade
+            </Link>
+            <Link
               className={`nav-link ${isPomodoro ? 'active' : ''}`}
               to="/pomodoro"
               aria-current={isPomodoro ? 'page' : undefined}
@@ -174,19 +183,21 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="breadcrumb">
             Workspace<span>/</span>
             <strong>
-              {isPomodoro
-                ? 'Pomodoro Timer'
-                : isGitHub
-                  ? 'GitHub integration'
-                  : isSettings
-                    ? 'Settings'
-                    : isMilestones
-                      ? 'Milestones'
-                      : isBugs
-                        ? 'Bug tracking'
-                        : isBoard
-                          ? 'Kanban boards'
-                          : 'Overview'}
+              {isGames
+                ? 'Games arcade'
+                : isPomodoro
+                  ? 'Pomodoro Timer'
+                  : isGitHub
+                    ? 'GitHub integration'
+                    : isSettings
+                      ? 'Settings'
+                      : isMilestones
+                        ? 'Milestones'
+                        : isBugs
+                          ? 'Bug tracking'
+                          : isBoard
+                            ? 'Kanban boards'
+                            : 'Overview'}
             </strong>
           </div>
           <div className="topbar-right">

@@ -1,0 +1,27 @@
+{
+  "generator": "Built-in image generation tool",
+  "requestedGenerator": "Image Generator 2.0",
+  "note": "Original assets generated for Asteroid Escape. PNG originals copied without alteration; transparency retained on sprites.",
+  "assets": [
+    {
+      "file": "asteroid-escape-space.png",
+      "transparent": false,
+      "prompt": "Use Image Generator 2.0. Use case: stylized-concept. Asset type: original background for a playable top-down space arcade game, Asteroid Escape, also used as arcade cover. Generate one landscape 1536x1024 image of deep midnight-indigo outer space, a delicate teal nebula sweeping diagonally from upper right toward lower left, distant tiny warm white stars, very subtle dust and dim far-off galaxies. Premium hand-painted science-fiction game art, atmospheric, quietly luminous, deep navy shadows, turquoise and muted violet highlights. Keep center and lower middle mostly dark empty navigable space so foreground gameplay sprites read clearly. No foreground asteroids, planets, spaceships, icons, lettering, frame, interface, watermark, or logos. Fill entire image edge to edge."
+    },
+    {
+      "file": "asteroid-escape-ship.png",
+      "transparent": true,
+      "prompt": "Use Image Generator 2.0. Use case: stylized-concept. Asset type: single original transparent PNG spaceship sprite for top-down 2D arcade game Asteroid Escape. One tiny charming pilot spacecraft pointing straight UP, strict overhead view, symmetrical compact arrowhead silhouette with short swept wings, ivory ceramic hull, copper-orange wing tips and trim, luminous turquoise cockpit, two short vivid cyan exhaust plumes pointing DOWN. Premium hand-painted 3D-like science fiction game illustration with crisp readable silhouette, soft shaded volume, attractive believable detailing, no outlines. Entire craft including exhaust fully inside image with 12 percent clear margin; subject centered, takes up most of canvas. Transparent alpha background, no cast ground shadow, no stars, no other objects, no text, no logos, no watermark."
+    },
+    {
+      "file": "asteroid-escape-asteroid.png",
+      "transparent": true,
+      "prompt": "Use Image Generator 2.0. Use case: stylized-concept. Asset type: single original transparent PNG asteroid sprite for top-down 2D arcade game Asteroid Escape. One roughly round irregular battered space rock viewed overhead, chunky craggy silhouette, charcoal-gray and muted copper stone, deep craters and rocky facets, subtle cool turquoise rim light along one side, warm starlight on upper left. Premium hand-painted 3D-like science fiction game art, crisp readable silhouette and tactile texture, bright enough to distinguish against midnight navy space. Center the entire asteroid with 12 percent transparent padding, takes up most of square. Truly transparent alpha background. No fragments or other objects, no ground shadow, no stars, no text, no logos, no watermark."
+    },
+    {
+      "file": "asteroid-escape-orb.png",
+      "transparent": true,
+      "prompt": "Use Image Generator 2.0. Use case: stylized-concept. Asset type: single original transparent PNG collectible energy orb sprite for top-down 2D arcade game Asteroid Escape. One brilliant round cyan-turquoise energy core enclosed in a small copper-gold broken circular containment ring, white-hot mint center with soft turquoise halo, a little internal swirling plasma detail. Premium hand-painted 3D-like science fiction game illustration, clean circular silhouette and high readability at 24 pixels. Center one entire orb with 18 percent clear margin including halo, no clipping. Truly transparent alpha background outside orb and soft halo. No stars, no ground shadow, no additional objects, no text, no logos, no watermark."
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Coffee,
   Pause,
@@ -174,6 +175,31 @@ export default function PomodoroPage() {
               </select>
             </label>
           </div>
+          {timer.settings.breakActivity === 'asteroid-escape' && (
+            <div className="pomodoro-break-game">
+              <h3>Your break: Asteroid Escape</h3>
+              <p>
+                {timer.phase === 'focus'
+                  ? 'Your spaceship will be ready when your next break begins.'
+                  : 'Dodge asteroids and collect cooling energy. Play starts or resumes this break, and ends when the timer does.'}
+              </p>
+              {timer.phase !== 'focus' && !blocked ? (
+                <Link
+                  className="button button--primary"
+                  to="/games/asteroid-escape?mode=break"
+                  onClick={() => {
+                    if (!running) pomodoro.toggle()
+                  }}
+                >
+                  Play this break
+                </Link>
+              ) : (
+                <Link className="text-link" to="/games">
+                  Explore the arcade
+                </Link>
+              )}
+            </div>
+          )}
         </section>
         <SettingsForm
           key={JSON.stringify(timer.settings)}
@@ -286,6 +312,22 @@ function SettingsForm({ settings }: { settings: Settings }) {
       <h2>Your session rhythm</h2>
       <p>Set the pace that works for you.</p>
       <fieldset disabled={blocked}>
+        <label className="pomodoro-break-choice">
+          Break activity
+          <select
+            aria-label="Break activity"
+            value={draft.breakActivity}
+            onChange={(event) =>
+              setDraft({
+                ...draft,
+                breakActivity: event.target.value as Settings['breakActivity'],
+              })
+            }
+          >
+            <option value="none">Quiet break</option>
+            <option value="asteroid-escape">Play Asteroid Escape</option>
+          </select>
+        </label>
         <div className="pomodoro-fields">
           {numbers.map(([key, label, max]) => (
             <label key={key}>

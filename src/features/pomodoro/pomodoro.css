@@ -4,6 +4,20 @@
   gap: 24px;
   align-items: start;
 }
+.pomodoro-break-game {
+  margin-top: 22px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+.pomodoro-break-game p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 10px 0 16px;
+}
+.pomodoro-break-choice {
+  margin: 22px 0;
+}
 .pomodoro-panel {
   border: 1px solid var(--border);
   background: var(--surface);

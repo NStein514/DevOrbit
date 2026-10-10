@@ -17,6 +17,7 @@ export const settingsSchema = z.object({
   autoFocus: z.boolean(),
   sound: z.boolean(),
   volume: z.number().int().min(0).max(100),
+  breakActivity: z.enum(['none', 'asteroid-escape']).default('none'),
 })
 export type Settings = z.infer<typeof settingsSchema>
 export const defaults: Settings = {
@@ -29,6 +30,7 @@ export const defaults: Settings = {
   autoFocus: false,
   sound: true,
   volume: 50,
+  breakActivity: 'none',
 }
 const timestamp = z.number().int().min(0).max(8640000000000000)
 export const timerSchema = z

@@ -150,17 +150,19 @@ async function stored(page: Page): Promise<Workspace> {
   return page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), key)
 }
 
-test('links the implemented Pomodoro and lists all seven planned minigames', async ({
+test('links the implemented Pomodoro and arcade, and lists six future games', async ({
   page,
 }) => {
   await page.goto('/#roadmap')
   await expect(
     page.getByRole('link', { name: 'Open Pomodoro Timer' }),
   ).toHaveAttribute('href', '/pomodoro')
-  const trigger = page.getByRole('button', { name: /Gamification/ })
+  await expect(
+    page.getByRole('link', { name: 'Open Games arcade' }),
+  ).toHaveAttribute('href', '/games')
+  const trigger = page.getByRole('button', { name: /More arcade games/ })
   await trigger.click()
   for (const name of [
-    'Asteroid Escape',
     'Lunar Landing',
     'Orbit Architect',
     'Gravity Golf',

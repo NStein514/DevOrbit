@@ -17,6 +17,10 @@ import { SettingsPage } from '../features/settings/SettingsPage'
 import { PomodoroProvider } from '../features/pomodoro/PomodoroProvider'
 
 const PomodoroPage = lazy(() => import('../features/pomodoro/PomodoroPage'))
+const ArcadePage = lazy(() => import('../features/games/ArcadePage'))
+const AsteroidEscapePage = lazy(
+  () => import('../features/games/AsteroidEscapePage'),
+)
 
 const GitHubPage = lazy(() => import('../features/github/GitHubPage'))
 
@@ -69,6 +73,11 @@ export function App() {
                   />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/pomodoro" element={<PomodoroPage />} />
+                  <Route path="/games" element={<ArcadePage />} />
+                  <Route
+                    path="/games/asteroid-escape"
+                    element={<AsteroidEscapePage />}
+                  />
                   <Route
                     path="/projects/:projectId/boards/:boardId"
                     element={<KanbanPage />}

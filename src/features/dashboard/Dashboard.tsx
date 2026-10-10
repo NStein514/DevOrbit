@@ -308,6 +308,21 @@ export function Dashboard() {
           Open GitHub integration <ArrowUpRight size={15} />
         </Link>
       </section>
+      <section className="dashboard-bugs" aria-label="Games arcade summary">
+        <span className="bug-stat-icon">
+          <Gamepad2 size={20} />
+        </span>
+        <div>
+          <h2>Your next escape is in orbit.</h2>
+          <p>
+            Dodge asteroids, collect energy, and play a little between focus
+            sessions.
+          </p>
+        </div>
+        <Link className="text-link" to="/games">
+          Open Games arcade <ArrowUpRight size={15} />
+        </Link>
+      </section>
       <div className="lower-grid">
         <section className="focus-panel" aria-labelledby="focus-title">
           <div className="panel-eyebrow">
