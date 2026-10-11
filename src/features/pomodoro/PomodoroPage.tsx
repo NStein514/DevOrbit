@@ -175,18 +175,23 @@ export default function PomodoroPage() {
               </select>
             </label>
           </div>
-          {timer.settings.breakActivity === 'asteroid-escape' && (
+          {timer.settings.breakActivity !== 'none' && (
             <div className="pomodoro-break-game">
-              <h3>Your break: Asteroid Escape</h3>
+              <h3>
+                Your break:{' '}
+                {timer.settings.breakActivity === 'lunar-landing'
+                  ? 'Lunar Landing'
+                  : 'Asteroid Escape'}
+              </h3>
               <p>
                 {timer.phase === 'focus'
                   ? 'Your spaceship will be ready when your next break begins.'
-                  : 'Dodge asteroids and collect cooling energy. Play starts or resumes this break, and ends when the timer does.'}
+                  : 'Your adventure starts or resumes this break, and ends when the timer does.'}
               </p>
               {timer.phase !== 'focus' && !blocked ? (
                 <Link
                   className="button button--primary"
-                  to="/games/asteroid-escape?mode=break"
+                  to={`/games/${timer.settings.breakActivity}?mode=break`}
                   onClick={() => {
                     if (!running) pomodoro.toggle()
                   }}
@@ -326,6 +331,7 @@ function SettingsForm({ settings }: { settings: Settings }) {
           >
             <option value="none">Quiet break</option>
             <option value="asteroid-escape">Play Asteroid Escape</option>
+            <option value="lunar-landing">Play Lunar Landing</option>
           </select>
         </label>
         <div className="pomodoro-fields">

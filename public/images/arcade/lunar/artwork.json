@@ -1,0 +1,42 @@
+{
+  "generation": "Built-in image generation",
+  "animation": "Game renderer animates generated plume, dust, scenery and platform lights; arcade cover floats with reduced-motion support.",
+  "assets": [
+    {
+      "key": "lander",
+      "transparent_background": true,
+      "prompt": "Original premium indie game sprite, orthographic FRONT view of a tiny lunar lander, symmetrical ivory ceramic capsule with copper trim, one turquoise cockpit window, two widely spaced landing legs with flat feet, one central engine nozzle pointing straight down. No flame, no smoke. Entire vehicle occupies exactly central 80% of square canvas with even padding, feet at 90% canvas height. Polished hand-painted science fiction, clear silhouette readable at 48 pixels, warm highlights cool rim light. Transparent background. No text, no scenery.",
+      "path": "public/images/arcade/lunar/lander.png"
+    },
+    {
+      "key": "moon",
+      "transparent_background": false,
+      "prompt": "Original polished 2D lunar landing game background, portrait 3:4 composition. Midnight navy outer space sky with sparse tiny stars, a beautiful large pale turquoise ringed planet in upper right, distant low silver lunar ridges only in bottom 15 percent. Central sky very dark and uncluttered for readable gameplay. Cinematic hand-painted indie game art, subtle teal haze, exquisite restrained detail. No spacecraft, no platforms, no text, no UI.",
+      "path": "public/images/arcade/lunar/moon.png"
+    },
+    {
+      "key": "ember",
+      "transparent_background": false,
+      "prompt": "Original polished 2D lunar landing game background, portrait 3:4 composition. Midnight plum space sky, glowing muted amber planet in upper left, distant volcanic copper mountains only in bottom 15 percent. Central sky dark and uncluttered for readable gameplay. Cinematic hand-painted indie game art, warm rust dust and small stars, restrained detail. No spacecraft, no platforms, no text, no UI.",
+      "path": "public/images/arcade/lunar/ember.png"
+    },
+    {
+      "key": "ice",
+      "transparent_background": false,
+      "prompt": "Original polished 2D lunar landing game background, portrait 3:4 composition. Deep indigo outer space sky, lavender blue gas giant in upper right, subtle emerald aurora ribbons across top, distant frozen moon ridges only bottom 15 percent. Central sky dark and uncluttered for readable gameplay. Cinematic hand-painted indie game art, fine stars and restrained detail. No spacecraft, no platforms, no text, no UI.",
+      "path": "public/images/arcade/lunar/ice.png"
+    },
+    {
+      "key": "plume",
+      "transparent_background": true,
+      "prompt": "Original 2D game effect sprite, one compact rocket exhaust plume pointing vertically downward. Bright mint white ignition point at top center, expanding into short soft turquoise flame tapering to wisps at bottom. Centered on transparent square canvas, flame starts at 10 percent image height ends at 90 percent. Polished painterly luminous arcade art matching ivory and copper lunar lander. No spacecraft, no nozzle, no scenery, no text.",
+      "path": "public/images/arcade/lunar/plume.png"
+    },
+    {
+      "key": "surface",
+      "transparent_background": false,
+      "prompt": "Original seamless lunar regolith material texture for a polished hand-painted 2D indie game, evenly lit slate blue gray rock with subtle craters and granular dust, small angular cracks, low contrast, orthographic flat texture filling entire square image. No horizon, no stars, no objects, no text, no lighting gradient. Useful as a repeating texture inside procedural moon terrain.",
+      "path": "public/images/arcade/lunar/surface.png"
+    }
+  ]
+}

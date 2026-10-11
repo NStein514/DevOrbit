@@ -316,7 +316,7 @@ export function Dashboard() {
         <div>
           <h2>Your next escape is in orbit.</h2>
           <p>
-            Dodge asteroids, collect energy, and play a little between focus
+            Dodge asteroids, land on distant moons, and play between focus
             sessions.
           </p>
         </div>

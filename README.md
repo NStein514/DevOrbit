@@ -8,9 +8,15 @@ DevOrbit includes a responsive homepage, personalization settings, a customizabl
 
 Kanban supports creating, renaming, and deleting projects and boards; custom column names, colors, ordering, completion states, and optional work-in-progress limits; and tasks with descriptions, priority, labels, and due dates. Drag tasks between columns, reorder tasks and columns, duplicate tasks, and search/filter work. Browser-local persistence and JSON backups are included.
 
-Six additional arcade games remain **planned**. The Games arcade now includes Asteroid Escape. GitHub integration uses a small Node/Express backend for secure OAuth or personal access token sessions. Project data still lives in your browser; there is no DevOrbit account or cloud workspace sync.
+Five additional arcade games remain **planned**. The Games arcade now includes Asteroid Escape and Lunar Landing. GitHub integration uses a small Node/Express backend for secure OAuth or personal access token sessions. Project data still lives in your browser; there is no DevOrbit account or cloud workspace sync.
 
-## Games arcade and Asteroid Escape
+## Games arcade, Asteroid Escape and Lunar Landing
+
+**Lunar Landing** is playable at `/games/lunar-landing` and as a Pomodoro break activity. Use ↑ / W / Space for upward thrust and ← → / A D for side jets, or hold the large touch buttons together. Release to coast; P / Escape pauses. Gravity and momentum keep working when engines are off. Fuel is limited, and empty tanks leave you coasting.
+
+Land both feet on either generated platform with descent speed at most 32 and sideways speed at most 20. The smaller amber pad adds 350 points; every landing earns 500 × sector plus 10 points per remaining fuel unit. Each success unlocks the next sector with fresh terrain, a refilled tank, higher gravity and narrower pads. Three original planetary landscapes rotate across sectors. Crashes restart the expedition; personal best scores save after every successful landing. Leaving the page discards the active expedition. Records use `devorbit.lunar.v1`, independently of Asteroid Escape.
+
+Six original Lunar Landing assets were made with built-in image generation. Their exact prompts and paths are in `public/images/arcade/lunar/artwork.json`. The renderer animates exhaust, landing dust, scenery drift and pad beacons. Reduced-motion preferences suppress decorative motion; leaving the window pauses flight. Artwork failures offer retry, and unavailable or malformed storage does not block play. Break mode pauses with the Pomodoro and ends when the break completes, including while the game is paused.
 
 The enhanced flight visuals include four asteroid appearances (original, volcanic, ice, and metallic), four nebula backgrounds with slow parallax and ten-second crossfades, and four energy pickup designs with pulsing cores and orbiting glints. Pickup bursts, impact fragments, and a temporary shield outline provide feedback without changing collision sizes, spawn randomness, movement speed, scoring, or difficulty.
 
@@ -18,7 +24,7 @@ The in-game spaceship uses a separate engine-off hull. Rear plumes fire only dur
 
 The eleven additional generated assets and their prompts are recorded in `public/images/arcade/visual-effects-artwork.json`. Sprite PNG alpha is preserved. These local images are loaded once on game entry and reused by the renderer.
 
-Open **Games arcade** from the sidebar, mobile navigation, or dashboard, or visit `/games`. **Asteroid Escape** is the first playable game; the other six game cards are explicitly marked as upcoming. Its direct URL is `/games/asteroid-escape`.
+Open **Games arcade** from the sidebar, mobile navigation, or dashboard, or visit `/games`. **Asteroid Escape** is the first playable game; the other five game cards are explicitly marked as upcoming. Its direct URL is `/games/asteroid-escape`.
 
 - Pilot a ship through an endless asteroid field using **arrow keys / WASD**, mouse dragging, finger dragging, or the four hold-to-steer buttons. On touch screens the ship follows above your finger. Controls operate inside the game without intercepting keyboard input elsewhere. The same fixed simulation space and movement speed apply on desktop and mobile.
 - The ship starts with three hull points. Asteroid hits cost one hull point, add heat, and briefly protect against another hit. Losing all hull points ends the flight. Asteroid speed and density gradually increase.
@@ -328,7 +334,8 @@ Typography uses self-hosted DM Sans and Manrope through Fontsource. Fonts and or
 - **Changelog generation (implemented):** completed-work selection, editable Markdown, local draft/release history, historical snapshots, and individual/combined exports.
 - **Customizable Pomodoro Timer (implemented):** adjustable focus/break durations, session cadence, automatic starts, sound/volume, daily goals, project intentions, and persistent session history.
 - **Games arcade / Asteroid Escape (implemented):** keyboard/touch survival game, original generated art, energy/heat tradeoffs, personal records, and Pomodoro break play.
-- **More arcade games (planned):** Lunar Landing, Orbit Architect, Gravity Golf, Cosmic Cleanup, Planet Pop, and Solar Surfer.
+- **Lunar Landing (implemented):** fuel-limited precision landings, generated terrain, escalating gravity, original art, and Pomodoro breaks.
+- **More arcade games (planned):** Orbit Architect, Gravity Golf, Cosmic Cleanup, Planet Pop, and Solar Surfer.
 
 Before adding cloud workspace sync, establish persistent workspace storage and DevOrbit account authentication. GitHub credentials already stay behind the backend; never expose secrets in the browser bundle.
 

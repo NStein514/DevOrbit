@@ -4,11 +4,12 @@ import { ArrowRight, Gamepad2, LockKeyhole, Timer, Trophy } from 'lucide-react'
 import { usePomodoro } from '../pomodoro/context'
 import { formatTime } from '../pomodoro/model'
 import { art } from './art'
+import { lunarArt } from './lunar/art'
 import { ARCADE_KEY, readRecord } from './records'
 import './games.css'
+import './lunar/lunar.css'
 
 const futureGames = [
-  'Lunar Landing',
   'Orbit Architect',
   'Gravity Golf',
   'Cosmic Cleanup',
@@ -38,7 +39,7 @@ export default function ArcadePage() {
           <p>Step away from the code. Take a tiny adventure.</p>
         </div>
         <span className="arcade-tag">
-          <Gamepad2 size={18} /> ONE GAME. INFINITE SPACE.
+          <Gamepad2 size={18} /> TWO GAMES. INFINITE SPACE.
         </span>
       </div>
       <section className="arcade-feature" aria-labelledby="asteroid-title">
@@ -81,6 +82,34 @@ export default function ArcadePage() {
           </span>
         </div>
       </section>
+      <section
+        className="arcade-feature lunar-card"
+        aria-labelledby="lunar-title"
+      >
+        <div className="arcade-feature-art" aria-hidden="true">
+          <img className="lunar-cover-ship" src={lunarArt.lander} alt="" />
+        </div>
+        <div className="arcade-feature-copy">
+          <span className="arcade-live">NOW BOARDING · PRECISION FLIGHT</span>
+          <h2 id="lunar-title">
+            Lunar
+            <br />
+            Landing
+          </h2>
+          <p>
+            A distant world. A little fuel. Find your footing on changing
+            terrain, then venture deeper into stronger gravity.
+          </p>
+          <div className="arcade-chips">
+            <span>Keyboard + touch</span>
+            <span>Planet hopping</span>
+            <span>Precision landings</span>
+          </div>
+          <Link className="button arcade-launch" to="/games/lunar-landing">
+            Play Lunar Landing <ArrowRight size={18} />
+          </Link>
+        </div>
+      </section>
       {saved.error && (
         <p role="alert" className="arcade-notice">
           {saved.error}
@@ -93,12 +122,16 @@ export default function ArcadePage() {
           <p>
             {breakReady
               ? `${formatTime(remaining)} left in your break. Break play ends when your timer does.`
-              : 'Choose Asteroid Escape as your Pomodoro break activity. Your timer keeps the adventure on schedule.'}
+              : 'Choose Asteroid Escape or Lunar Landing as your Pomodoro break activity. Your timer keeps the adventure on schedule.'}
           </p>
         </div>
         <Link
           className="button button--outline"
-          to={breakReady ? '/games/asteroid-escape?mode=break' : '/pomodoro'}
+          to={
+            breakReady
+              ? `/games/${timer.settings.breakActivity === 'lunar-landing' ? 'lunar-landing' : 'asteroid-escape'}?mode=break`
+              : '/pomodoro'
+          }
         >
           {breakReady ? 'Play this break' : 'Set up a game break'}{' '}
           <ArrowRight size={16} />
@@ -108,12 +141,12 @@ export default function ArcadePage() {
         <p className="eyebrow">MORE WORLDS ON THE HORIZON</p>
         <h2 id="future-games">The next adventures</h2>
         <p>
-          Six more games are planned. Asteroid Escape is ready to play today.
+          Five more games are planned. Two adventures are ready to play today.
         </p>
         <div className="arcade-future-grid">
           {futureGames.map((name, index) => (
             <div className="arcade-locked" key={name}>
-              <span>0{index + 2}</span>
+              <span>0{index + 3}</span>
               <h3>{name}</h3>
               <small>
                 <LockKeyhole size={13} /> Coming later

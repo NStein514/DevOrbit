@@ -150,7 +150,7 @@ async function stored(page: Page): Promise<Workspace> {
   return page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), key)
 }
 
-test('links the implemented Pomodoro and arcade, and lists six future games', async ({
+test('links the implemented Pomodoro and arcade, and lists five future games', async ({
   page,
 }) => {
   await page.goto('/#roadmap')

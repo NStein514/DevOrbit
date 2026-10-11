@@ -17,7 +17,9 @@ export const settingsSchema = z.object({
   autoFocus: z.boolean(),
   sound: z.boolean(),
   volume: z.number().int().min(0).max(100),
-  breakActivity: z.enum(['none', 'asteroid-escape']).default('none'),
+  breakActivity: z
+    .enum(['none', 'asteroid-escape', 'lunar-landing'])
+    .default('none'),
 })
 export type Settings = z.infer<typeof settingsSchema>
 export const defaults: Settings = {
