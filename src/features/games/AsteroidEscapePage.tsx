@@ -75,6 +75,8 @@ function FlightGame({ breakMode }: { breakMode: boolean }) {
   const clearControls = useCallback(() => {
     keys.current.clear()
     target.current = undefined
+    flight.current.thrustX = 0
+    flight.current.thrustY = 0
   }, [])
   const publish = useCallback(() => {
     setView(snapshot(flight.current))

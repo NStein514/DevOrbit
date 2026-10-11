@@ -1,0 +1,74 @@
+{
+  "generation": "Built-in image generation",
+  "assets": [
+    {
+      "key": "asteroid-1",
+      "prompt": "Original top-down arcade sprite: a jagged dark volcanic asteroid with tiny glowing orange mineral fissures. One roughly round rock centered, entire silhouette within 12% padding. Hand-painted polished 3D game art, clear silhouette, upper-left lighting, cool rim light. True transparent background. No text, no stars, no extra objects.",
+      "transparent_background": true,
+      "path": "public/images/arcade/asteroid-1.png"
+    },
+    {
+      "key": "asteroid-2",
+      "prompt": "Original top-down arcade sprite: a pale blue icy asteroid with fractured crystalline ridges. One roughly round rock centered, entire silhouette within 12% padding. Hand-painted polished 3D game art, clear silhouette, upper-left lighting, cool rim light. True transparent background. No text, no stars, no extra objects.",
+      "transparent_background": true,
+      "path": "public/images/arcade/asteroid-2.png"
+    },
+    {
+      "key": "asteroid-3",
+      "prompt": "Original top-down arcade sprite: an irregular rusty iron asteroid with metallic copper veins and deep impact craters. One roughly round rock centered, entire silhouette within 12% padding. Hand-painted polished 3D game art, clear silhouette, upper-left lighting, cool rim light. True transparent background. No text, no stars, no extra objects.",
+      "transparent_background": true,
+      "path": "public/images/arcade/asteroid-3.png"
+    },
+    {
+      "key": "space-1",
+      "prompt": "Original background for Asteroid Escape arcade game. Deep dark space with violet aurora curtains and indigo cosmic dust. Landscape 1536x1024. Painterly premium science fiction art, fine distant stars, mostly dark center for readable gameplay. Gentle diffuse clouds across full image suitable for slow parallax motion and crossfading. No ships, no rocks, no planets, no text, no interface.",
+      "transparent_background": false,
+      "path": "public/images/arcade/space-1.png"
+    },
+    {
+      "key": "space-2",
+      "prompt": "Original background for Asteroid Escape arcade game. Deep dark space with emerald teal nebula wisps and distant blue stars. Landscape 1536x1024. Painterly premium science fiction art, fine distant stars, mostly dark center for readable gameplay. Gentle diffuse clouds across full image suitable for slow parallax motion and crossfading. No ships, no rocks, no planets, no text, no interface.",
+      "transparent_background": false,
+      "path": "public/images/arcade/space-2.png"
+    },
+    {
+      "key": "space-3",
+      "prompt": "Original background for Asteroid Escape arcade game. Deep dark space with muted amber interstellar clouds and deep purple dust. Landscape 1536x1024. Painterly premium science fiction art, fine distant stars, mostly dark center for readable gameplay. Gentle diffuse clouds across full image suitable for slow parallax motion and crossfading. No ships, no rocks, no planets, no text, no interface.",
+      "transparent_background": false,
+      "path": "public/images/arcade/space-3.png"
+    },
+    {
+      "key": "energy-1",
+      "prompt": "Original top-down arcade pickup sprite: a round cyan plasma core inside three copper curved containment segments. Single centered small collectible with white luminous core, translucent cyan halo, premium hand-painted science fiction 3D game art matching an ivory copper spaceship. Roughly circular silhouette, 18% transparent margin. Transparent background. No text, no environment, no other objects. Designed to rotate and pulse in game.",
+      "transparent_background": true,
+      "path": "public/images/arcade/energy-1.png"
+    },
+    {
+      "key": "energy-2",
+      "prompt": "Original top-down arcade pickup sprite: a mint crystal energy capsule suspended inside a slim golden circular cage. Single centered small collectible with white luminous core, translucent cyan halo, premium hand-painted science fiction 3D game art matching an ivory copper spaceship. Roughly circular silhouette, 18% transparent margin. Transparent background. No text, no environment, no other objects. Designed to rotate and pulse in game.",
+      "transparent_background": true,
+      "path": "public/images/arcade/energy-2.png"
+    },
+    {
+      "key": "energy-3",
+      "prompt": "Original top-down arcade pickup sprite: a brilliant blue spherical energy cell inside an ivory and copper segmented ring. Single centered small collectible with white luminous core, translucent cyan halo, premium hand-painted science fiction 3D game art matching an ivory copper spaceship. Roughly circular silhouette, 18% transparent margin. Transparent background. No text, no environment, no other objects. Designed to rotate and pulse in game.",
+      "transparent_background": true,
+      "path": "public/images/arcade/energy-3.png"
+    },
+    {
+      "key": "ship-coast",
+      "prompt": "Edit this spaceship sprite: remove ALL flames, exhaust plumes and external thruster glow. Engines are off, dark nozzles. Preserve the exact hull design, ivory and copper colors, turquoise cockpit, overhead orientation pointing up, placement and original canvas bounds including now-empty area below engines. Transparent background. No new objects.",
+      "transparent_background": true,
+      "referenced_image_paths": [
+        "public/images/arcade/asteroid-escape-ship.png"
+      ],
+      "path": "public/images/arcade/ship-coast.png"
+    },
+    {
+      "key": "exhaust",
+      "prompt": "One isolated cyan spaceship thruster exhaust flame sprite, transparent background. White hot narrow nozzle origin at TOP CENTER flowing DOWN into tapered electric turquoise blue plasma plume. Crisp luminous layered painterly sci-fi game art. Vertical thin flame, no engine, no hull, no text, no objects. Entire flame within 15% clear padding, centered. For real-time directional particle animation.",
+      "transparent_background": true,
+      "path": "public/images/arcade/exhaust.png"
+    }
+  ]
+}

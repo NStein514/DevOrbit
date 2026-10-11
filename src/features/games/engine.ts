@@ -28,6 +28,9 @@ export interface Flight {
   orbIn: number
   seed: number
   nextId: number
+  thrustX: number
+  thrustY: number
+  effects: { x: number; y: number; age: number; kind: 'energy' | 'impact' }[]
 }
 export interface Controls {
   x: number
@@ -51,6 +54,9 @@ export function createFlight(seed = 123456): Flight {
     orbIn: 1,
     seed: seed >>> 0 || 1,
     nextId: 0,
+    thrustX: 0,
+    thrustY: 0,
+    effects: [],
   }
 }
 function random(flight: Flight) {
@@ -73,6 +79,7 @@ export function step(flight: Flight, controls: Controls, dt: number) {
   // Callers use fixed steps; this guard also prevents large jumps after suspension.
   dt = Math.max(0, Math.min(dt, 1 / 30))
   flight.elapsed += dt
+  flight.effects = flight.effects.filter((effect) => (effect.age += dt) < 0.65)
   flight.heat = Math.min(
     100,
     flight.heat + (3.4 + Math.min(2, flight.elapsed / 90)) * dt,
@@ -84,6 +91,8 @@ export function step(flight: Flight, controls: Controls, dt: number) {
     y = controls.target.y - flight.y
   }
   const length = Math.hypot(x, y)
+  const previousX = flight.x
+  const previousY = flight.y
   if (length > 0) {
     const distance = controls.target ? Math.min(length, 260 * dt) : 260 * dt
     flight.x += (x / length) * distance
@@ -91,6 +100,8 @@ export function step(flight: Flight, controls: Controls, dt: number) {
   }
   flight.x = Math.max(22, Math.min(WIDTH - 22, flight.x))
   flight.y = Math.max(40, Math.min(HEIGHT - 28, flight.y))
+  flight.thrustX = dt > 0 ? (flight.x - previousX) / (260 * dt) : 0
+  flight.thrustY = dt > 0 ? (flight.y - previousY) / (260 * dt) : 0
   const speed = 110 + Math.min(160, flight.elapsed * 1.5)
   flight.rockIn -= dt
   flight.orbIn -= dt
@@ -127,6 +138,7 @@ export function step(flight: Flight, controls: Controls, dt: number) {
       Math.hypot(rock.x - flight.x, rock.y - flight.y) < rock.radius + 12
     ) {
       flight.shields -= 1
+      flight.effects.push({ x: flight.x, y: flight.y, age: 0, kind: 'impact' })
       flight.invulnerable = 1.4
       flight.heat = Math.min(100, flight.heat + 10)
       rock.y = HEIGHT + 100
@@ -140,6 +152,7 @@ export function step(flight: Flight, controls: Controls, dt: number) {
     orb.y += orb.speed * dt
     if (Math.hypot(orb.x - flight.x, orb.y - flight.y) < orb.radius + 16) {
       flight.orbs += 1
+      flight.effects.push({ x: orb.x, y: orb.y, age: 0, kind: 'energy' })
       flight.heat = Math.max(0, flight.heat - 24)
       orb.y = HEIGHT + 100
     }

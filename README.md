@@ -12,6 +12,12 @@ Changelog generation and six additional arcade games remain **planned**. The Gam
 
 ## Games arcade and Asteroid Escape
 
+The enhanced flight visuals include four asteroid appearances (original, volcanic, ice, and metallic), four nebula backgrounds with slow parallax and ten-second crossfades, and four energy pickup designs with pulsing cores and orbiting glints. Pickup bursts, impact fragments, and a temporary shield outline provide feedback without changing collision sizes, spawn randomness, movement speed, scoring, or difficulty.
+
+The in-game spaceship uses a separate engine-off hull. Rear plumes fire only during forward movement; lateral and reverse jets exhaust opposite the direction of travel, including diagonal input. They stop on release, when a pointer reaches its target, at movement boundaries, and while paused or finished. All animation follows simulation time and freezes on pause. Reduced-motion mode keeps the background and pickups still, removes particles and exhaust flicker, and retains steady directional thrust cues. The original ship artwork remains on the arcade cover.
+
+The eleven additional generated assets and their prompts are recorded in `public/images/arcade/visual-effects-artwork.json`. Sprite PNG alpha is preserved. These local images are loaded once on game entry and reused by the renderer.
+
 Open **Games arcade** from the sidebar, mobile navigation, or dashboard, or visit `/games`. **Asteroid Escape** is the first playable game; the other six game cards are explicitly marked as upcoming. Its direct URL is `/games/asteroid-escape`.
 
 - Pilot a ship through an endless asteroid field using **arrow keys / WASD**, mouse dragging, finger dragging, or the four hold-to-steer buttons. On touch screens the ship follows above your finger. Controls operate inside the game without intercepting keyboard input elsewhere. The same fixed simulation space and movement speed apply on desktop and mobile.
@@ -24,7 +30,7 @@ For a timed game break, open **Pomodoro Timer**, set **Break activity → Play A
 
 Break play requires a running break. Pausing the Pomodoro pauses the game, and completing/skipping a break ends the flight and offers **Return to focus**, even if the game itself was paused. The Pomodoro keeps counting while gameplay is paused. Free play remains independent of the timer and has no time limit. Games never start automatically or take over a focus session.
 
-All four game art assets were created specifically for this feature using the built-in image generation tool with Image Generator 2.0 requested: the nebula, spaceship, asteroid, and cooling orb. Original PNG files, including sprite transparency, live in `public/images/arcade/`; `artwork.json` records the exact generation prompts. The arcade cover composes those same assets. UI controls use the project's existing icon library. Artwork loads locally, with a retry action if loading fails.
+The four original game art assets were created specifically for this feature using the built-in image generation tool with Image Generator 2.0 requested: the nebula, spaceship, asteroid, and cooling orb. Original PNG files, including sprite transparency, live in `public/images/arcade/`; `artwork.json` records the exact generation prompts. The arcade cover composes those same assets. UI controls use the project's existing icon library. Artwork loads locally, with a retry action if loading fails.
 
 ## Customizable Pomodoro Timer
 
