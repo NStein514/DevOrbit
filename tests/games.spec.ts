@@ -187,7 +187,8 @@ test('break completion ends a paused flight and preserves the Pomodoro cycle', a
   await page.getByRole('button', { name: 'Launch flight' }).click()
   await page.clock.runFor(1000)
   await page.getByRole('button', { name: 'Pause', exact: true }).click()
-  await page.clock.runFor(60000)
+  // The flight is paused; jump to its deadline without replaying idle frames.
+  await page.clock.fastForward(60000)
   await expect(
     page.getByRole('heading', { name: 'Back to your mission.' }),
   ).toBeVisible()

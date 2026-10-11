@@ -22,6 +22,8 @@ const AsteroidEscapePage = lazy(
   () => import('../features/games/AsteroidEscapePage'),
 )
 
+const ChangelogPage = lazy(() => import('../features/changelog/ChangelogPage'))
+
 const GitHubPage = lazy(() => import('../features/github/GitHubPage'))
 
 const MilestoneLanding = lazy(() =>
@@ -70,6 +72,15 @@ export function App() {
                   <Route
                     path="/projects/:projectId/github"
                     element={<GitHubPage />}
+                  />
+                  <Route path="/changelog" element={<ChangelogPage />} />
+                  <Route
+                    path="/projects/:projectId/changelog"
+                    element={<ChangelogPage />}
+                  />
+                  <Route
+                    path="/projects/:projectId/changelog/:changelogId"
+                    element={<ChangelogPage />}
                   />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/pomodoro" element={<PomodoroPage />} />

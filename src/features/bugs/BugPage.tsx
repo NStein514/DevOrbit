@@ -208,6 +208,7 @@ function BugView({ project, bugId }: { project: Project; bugId?: string }) {
           Milestones
         </Link>
         <Link to={`/projects/${project.id}/github`}>GitHub</Link>
+        <Link to={`/projects/${project.id}/changelog`}>Changelogs</Link>
       </div>
       {bugId ? (
         selected ? (

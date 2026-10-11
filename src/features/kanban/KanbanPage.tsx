@@ -304,6 +304,7 @@ function BoardView({ projectId, board }: { projectId: string; board: Board }) {
           Milestones
         </Link>
         <Link to={`/projects/${project.id}/github`}>GitHub</Link>
+        <Link to={`/projects/${project.id}/changelog`}>Changelogs</Link>
       </div>
       <div className="board-heading">
         <div>
@@ -710,6 +711,7 @@ function BoardView({ projectId, board }: { projectId: string; board: Board }) {
               boards: [createBoard()],
               bugs: [],
               milestones: [],
+              changelogs: [],
             }
             const saved = update((current) => ({
               ...current,
@@ -773,7 +775,7 @@ function BoardView({ projectId, board }: { projectId: string; board: Board }) {
         >
           <p>
             Delete “{project.name}” with all of its boards, tasks, bug reports,
-            and milestones? This cannot be undone.
+            milestones, and changelogs? This cannot be undone.
           </p>
         </ConfirmDialog>
       )}
