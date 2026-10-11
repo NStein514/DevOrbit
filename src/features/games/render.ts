@@ -115,22 +115,19 @@ export function renderFlight(
     ctx.rotate(angle)
     ctx.globalCompositeOperation = 'lighter'
     ctx.globalAlpha = 0.8 + power * 0.2
-    ctx.drawImage(
-      sprites.exhaust,
-      -size / 2,
-      -4,
-      size,
-      size * 2.6 * flicker * (0.5 + power * 0.5),
-    )
+    const length = size * 2.6 * flicker * (0.5 + power * 0.5)
+    // Anchor the flame's bright tip (8.5% down the sprite) at the nozzle,
+    // keeping the attachment fixed as the plume changes length.
+    ctx.drawImage(sprites.exhaust, -size / 2, -length * 0.085, size, length)
     ctx.restore()
   }
   // Plumes point opposite movement; the rear engines fire only while moving forward.
-  jet(-10, 18, 0, thrust.forward, 12)
-  jet(10, 18, 0, thrust.forward, 12)
-  jet(-17, -9, Math.PI, thrust.reverse, 8)
-  jet(17, -9, Math.PI, thrust.reverse, 8)
-  jet(-26, 6, Math.PI / 2, thrust.right, 9)
-  jet(26, 6, -Math.PI / 2, thrust.left, 9)
+  jet(-8, 19, 0, thrust.forward, 12)
+  jet(8, 19, 0, thrust.forward, 12)
+  jet(-17, -9, Math.PI, thrust.reverse, 12)
+  jet(17, -9, Math.PI, thrust.reverse, 12)
+  jet(-26, 6, Math.PI / 2, thrust.right, 13)
+  jet(26, 6, -Math.PI / 2, thrust.left, 13)
   ctx.save()
   if (flight.invulnerable > 0) ctx.globalAlpha = 0.7
   ctx.drawImage(sprites.coast, flight.x - 38, flight.y - 40, 76, 76)
