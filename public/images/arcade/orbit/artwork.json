@@ -1,0 +1,14 @@
+{
+  "feature": "Orbit Architect",
+  "method": "Original Image Generator artwork",
+  "assets": [
+    {
+      "file": "world.png",
+      "description": "Turquoise planet and deep navy nebula backdrop"
+    },
+    {
+      "file": "satellite.png",
+      "description": "Gold satellite with blue solar arrays, transparent background"
+    }
+  ]
+}

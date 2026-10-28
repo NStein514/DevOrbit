@@ -1,14 +1,14 @@
 import { expect, test } from '@playwright/test'
 import { initialState, POMODORO_KEY } from '../src/features/pomodoro/model.js'
 
-test('arcade has two playable games, original artwork and responsive future cards', async ({
+test('arcade has four playable games, original artwork and responsive future cards', async ({
   page,
 }) => {
   await page.goto('/games')
   await expect(
     page.getByRole('heading', { name: 'The orbital arcade.' }),
   ).toBeVisible()
-  await expect(page.locator('.arcade-locked')).toHaveCount(5)
+  await expect(page.locator('.arcade-locked')).toHaveCount(3)
   await expect(
     page.getByRole('link', { name: 'Play Asteroid Escape' }),
   ).toHaveCount(1)

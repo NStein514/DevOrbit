@@ -342,3 +342,15 @@ Before adding cloud workspace sync, establish persistent workspace storage and D
 ## Contribution and ownership
 
 Use your own Git identity for commits. This project does not configure an author, add automated co-author trailers, or create commits during setup. Review and commit changes with your normal Git workflow.
+
+## Orbit Architect
+
+Open **Games arcade → Play Orbit Architect**, or `/games/orbit-architect`. Set launch radius, position, direction relative to the tangent, and velocity. A dashed trajectory previews your launch; the circular preset provides a starting point. Keep three satellites alive together for 30 simulation seconds to establish a constellation. Planet impacts, satellite collisions, and escapes remove satellites. Up to eight can fly at once.
+
+The simulation uses fixed-step gravity, animated trails, collision rings, and original generated planet/background and satellite artwork. Reduced-motion preferences suppress decorative glow and collision rings. Pause/resume and reset are available, and switching tabs automatically pauses. Sliders support keyboard and touch. This initial sandbox is session-only; leaving the page clears the constellation.
+
+## Gravity Golf
+
+Open **Games arcade → Play Gravity Golf**, or `/games/gravity-golf`. Adjust shot angle and power to slingshot a comet around planets into the purple black hole. Three holes introduce different gravity fields; total course par is eight. Every launch counts as a stroke, including abandoned shots. Failed shots return to the same tee on the next launch. Capture unlocks the next hole and the final hole shows your course total.
+
+The optional dashed preview uses the same fixed-step simulation as live flight. Planet impacts, leaving the course, or 18 seconds in flight end a shot. Pause/resume, abandon shot, and restart are supported. Switching tabs automatically pauses. Original Image Generator assets supply the starfield, planet, comet, black hole, and particle texture. The renderer animates planet rotation, the accretion disk, fading comet wakes, impact particles, and capture spirals. Pausing freezes these effects; reduced motion disables decorative rotation and particle bursts. Failed artwork loads can be retried without losing course progress. Keyboard/touch sliders work on desktop and mobile. Progress is session-only and resets on leaving the page.

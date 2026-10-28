@@ -1,0 +1,20 @@
+{
+  "feature": "Gravity Golf",
+  "method": "Original Image Generator artwork",
+  "assets": [
+    {
+      "file": "background.png",
+      "description": "Violet and teal nebula starfield"
+    },
+    { "file": "planet.png", "description": "Transparent ocean planet" },
+    {
+      "file": "black-hole.png",
+      "description": "Transparent violet accretion disk and dark event horizon"
+    },
+    { "file": "comet.png", "description": "Transparent icy comet nucleus" },
+    {
+      "file": "spark.png",
+      "description": "Transparent energy particle for wakes, impacts and capture spirals"
+    }
+  ]
+}

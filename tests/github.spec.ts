@@ -150,7 +150,7 @@ async function stored(page: Page): Promise<Workspace> {
   return page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), key)
 }
 
-test('links the implemented Pomodoro and arcade, and lists five future games', async ({
+test('links the implemented Pomodoro and arcade, and lists three future games', async ({
   page,
 }) => {
   await page.goto('/#roadmap')
@@ -164,8 +164,6 @@ test('links the implemented Pomodoro and arcade, and lists five future games', a
   await trigger.click()
   for (const name of [
     'Lunar Landing',
-    'Orbit Architect',
-    'Gravity Golf',
     'Cosmic Cleanup',
     'Planet Pop',
     'Solar Surfer',

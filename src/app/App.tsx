@@ -18,6 +18,10 @@ import { PomodoroProvider } from '../features/pomodoro/PomodoroProvider'
 
 const PomodoroPage = lazy(() => import('../features/pomodoro/PomodoroPage'))
 const ArcadePage = lazy(() => import('../features/games/ArcadePage'))
+const GravityGolfPage = lazy(() => import('../features/games/GravityGolfPage'))
+const OrbitArchitectPage = lazy(
+  () => import('../features/games/OrbitArchitectPage'),
+)
 const LunarLandingPage = lazy(
   () => import('../features/games/LunarLandingPage'),
 )
@@ -87,6 +91,14 @@ export function App() {
                   />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/pomodoro" element={<PomodoroPage />} />
+                  <Route
+                    path="/games/orbit-architect"
+                    element={<OrbitArchitectPage />}
+                  />
+                  <Route
+                    path="/games/gravity-golf"
+                    element={<GravityGolfPage />}
+                  />
                   <Route path="/games" element={<ArcadePage />} />
                   <Route
                     path="/games/lunar-landing"

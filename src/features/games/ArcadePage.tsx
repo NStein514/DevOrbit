@@ -9,13 +9,7 @@ import { ARCADE_KEY, readRecord } from './records'
 import './games.css'
 import './lunar/lunar.css'
 
-const futureGames = [
-  'Orbit Architect',
-  'Gravity Golf',
-  'Cosmic Cleanup',
-  'Planet Pop',
-  'Solar Surfer',
-]
+const futureGames = ['Cosmic Cleanup', 'Planet Pop', 'Solar Surfer']
 export default function ArcadePage() {
   const [saved, setSaved] = useState(readRecord)
   const { timer, remaining, blocked } = usePomodoro()
@@ -39,7 +33,7 @@ export default function ArcadePage() {
           <p>Step away from the code. Take a tiny adventure.</p>
         </div>
         <span className="arcade-tag">
-          <Gamepad2 size={18} /> TWO GAMES. INFINITE SPACE.
+          <Gamepad2 size={18} /> FOUR GAMES. INFINITE SPACE.
         </span>
       </div>
       <section className="arcade-feature" aria-labelledby="asteroid-title">
@@ -137,11 +131,42 @@ export default function ArcadePage() {
           <ArrowRight size={16} />
         </Link>
       </section>
+      <section className="arcade-feature">
+        <img
+          src="/images/arcade/orbit/world.png"
+          alt="Turquoise planet in a star field"
+          style={{ width: '100%', borderRadius: 16 }}
+        />
+        <div className="arcade-feature-copy">
+          <span className="arcade-live">NOW BOARDING · ORBITAL SANDBOX</span>
+          <h2>Orbit Architect</h2>
+          <p>
+            Launch tiny satellites. Shape their paths. Build a constellation
+            that lasts.
+          </p>
+          <Link className="button arcade-launch" to="/games/orbit-architect">
+            Play Orbit Architect <ArrowRight size={18} />
+          </Link>
+        </div>
+      </section>
+      <section className="arcade-break-card">
+        <Gamepad2 size={32} />
+        <div>
+          <h2>Gravity Golf</h2>
+          <p>
+            Slingshot a tiny comet around planets into a black hole. Three
+            holes. A universe of curves.
+          </p>
+        </div>
+        <Link className="button button--primary" to="/games/gravity-golf">
+          Play Gravity Golf <ArrowRight size={18} />
+        </Link>
+      </section>
       <section className="arcade-future" aria-labelledby="future-games">
         <p className="eyebrow">MORE WORLDS ON THE HORIZON</p>
         <h2 id="future-games">The next adventures</h2>
         <p>
-          Five more games are planned. Two adventures are ready to play today.
+          Three more games are planned. Four adventures are ready to play today.
         </p>
         <div className="arcade-future-grid">
           {futureGames.map((name, index) => (
