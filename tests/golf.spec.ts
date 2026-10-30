@@ -9,6 +9,9 @@ const solutions = [
   [-26, 120],
   [-1, 335],
   [-38, 120],
+  [-23, 435],
+  [-1, 310],
+  [-9, 145],
 ]
 test('all holes are solvable, gravity bends shots and failure outcomes are distinct', () => {
   holes.forEach((h, i) =>
@@ -48,12 +51,12 @@ async function setShot(page: Page, a: number, p: number) {
       }, value)
   }
 }
-test('finishes three holes, counts strokes and restarts cleanly', async ({
+test('finishes six holes, saves bests, counts strokes and restarts cleanly', async ({
   page,
 }) => {
-  test.setTimeout(60000)
+  test.setTimeout(120000)
   await page.goto('/games/gravity-golf')
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 6; i++) {
     await setShot(page, ...(solutions[i] as [number, number]))
     await page
       .getByRole('button', { name: 'Launch comet', exact: true })
@@ -61,17 +64,23 @@ test('finishes three holes, counts strokes and restarts cleanly', async ({
     await expect(
       page.getByRole('button', { name: 'Launch comet', exact: true }),
     ).toBeDisabled()
-    if (i < 2) {
+    if (i < 5) {
       await expect(
         page.getByRole('button', { name: 'Next hole', exact: true }),
       ).toBeVisible({ timeout: 20000 })
       await page.getByRole('button', { name: 'Next hole', exact: true }).click()
     } else
       await expect(page.getByRole('status')).toContainText(
-        'Course complete! 3 strokes',
+        'Course complete! 6 strokes',
         { timeout: 20000 },
       )
   }
+  const record = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('devorbit.gravity-golf.v1')!),
+  )
+  expect(record).toEqual({ best: 6, medals: [3, 3, 3, 3, 3, 3] })
+  await page.reload()
+  await expect(page.getByText('Best course · 6 strokes')).toBeVisible()
   await page
     .getByRole('button', { name: 'Restart course', exact: true })
     .click()

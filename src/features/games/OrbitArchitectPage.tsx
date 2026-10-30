@@ -1,5 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent,
+} from 'react'
 import {
   advance,
   launch,
@@ -8,6 +14,16 @@ import {
   gravity,
   type Satellite,
 } from './orbit/engine'
+import {
+  missions,
+  missionReady,
+  missionStars,
+  occupiedLanes,
+} from './orbit/missions'
+import { renderOrbit, type OrbitEffect } from './orbit/render'
+import { GameShell } from './shared/GameShell'
+import { useGameSession } from './shared/useGameSession'
+import { readGameRecord, saveGameRecord } from './shared/records'
 import './orbit/orbit.css'
 export default function OrbitArchitectPage() {
   const canvas = useRef<HTMLCanvasElement>(null),
@@ -16,144 +32,192 @@ export default function OrbitArchitectPage() {
   const [radius, setRadius] = useState(190),
     [position, setPosition] = useState(0),
     [direction, setDirection] = useState(0),
-    [speed, setSpeed] = useState(31),
-    [paused, setPaused] = useState(false),
+    [speed, setSpeed] = useState(31)
+  const [paused, setPaused] = useState(false),
     [count, setCount] = useState(0),
     [message, setMessage] = useState(
-      'Launch three satellites and keep them together for 30 seconds.',
-    ),
-    [ready, setReady] = useState(false),
+      'Choose an orbit lane, then launch. Your next launch position spaces itself out.',
+    )
+  const [ready, setReady] = useState(false),
     [error, setError] = useState(false),
-    [attempt, setAttempt] = useState(0),
-    [won, setWon] = useState(false)
-  const settings = useRef({ radius, position, direction, speed, paused })
-  useEffect(() => {
-    settings.current = { radius, position, direction, speed, paused }
-  }, [radius, position, direction, speed, paused])
+    [attempt, setAttempt] = useState(0)
+  const [mission, setMission] = useState(0),
+    [won, setWon] = useState(false),
+    [progress, setProgress] = useState(0),
+    [lanes, setLanes] = useState(0),
+    [losses, setLosses] = useState(0)
+  const [saved, setSaved] = useState(() => readGameRecord('orbit-architect'))
+  const simulation = useRef({
+    held: 0,
+    losses: 0,
+    won: false,
+    effects: [] as OrbitEffect[],
+    time: 0,
+  })
+  const pointer = useRef<number | null>(null)
+  const session = useGameSession()
+  const preview = useMemo(() => {
+    const body = launch(0, radius, position, direction, speed),
+      points = [{ x: body.x, y: body.y }]
+    for (let i = 0; i < 1000; i++) {
+      step(body, 0.04)
+      if (lost(body)) break
+      points.push({ x: body.x, y: body.y })
+    }
+    return points
+  }, [radius, position, direction, speed])
+  const config = useRef({
+    radius,
+    position,
+    direction,
+    speed,
+    paused,
+    mission,
+    preview,
+    canPlay: session.canPlay,
+  })
+  useLayoutEffect(() => {
+    config.current = {
+      radius,
+      position,
+      direction,
+      speed,
+      paused,
+      mission,
+      preview,
+      canPlay: session.canPlay,
+    }
+  }, [
+    radius,
+    position,
+    direction,
+    speed,
+    paused,
+    mission,
+    preview,
+    session.canPlay,
+  ])
   useEffect(() => {
     let disposed = false,
       frame = 0,
       last = 0,
-      accumulator = 0,
-      held = 0,
-      celebrated = false
+      acc = 0,
+      published = 0
     const world = new Image(),
-      sprite = new Image()
+      sprite = new Image(),
+      motion = matchMedia('(prefers-reduced-motion: reduce)')
     world.src = '/images/arcade/orbit/world.png'
     sprite.src = '/images/arcade/orbit/satellite.png'
-    const effects: { x: number; y: number; age: number }[] = []
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
+    const el = canvas.current!,
+      ctx = el.getContext('2d')!
+    let drawnConfig: typeof config.current | null = null
+    let drawnHeight = 0
+    let drawnReduced = false
+    let drawnWon = false
+    let resizeFrame = 0
+    const resize = new ResizeObserver(() => {
+      cancelAnimationFrame(resizeFrame)
+      resizeFrame = requestAnimationFrame(() => {
+        const height = el.clientWidth < 600 ? 900 : 562
+        if (el.height !== height) el.height = height
+      })
+    })
+    resize.observe(el)
     Promise.all([world.decode(), sprite.decode()])
       .then(() => {
         if (disposed) return
         setReady(true)
-        const ctx = canvas.current!.getContext('2d')!
-        function draw(time: number) {
+        function draw(now: number) {
           if (disposed) return
-          const dt = last ? Math.min((time - last) / 1000, 0.05) : 0
-          last = time
-          const cfg = settings.current
-          if (!cfg.paused) {
-            accumulator += dt
-            while (accumulator >= 1 / 120) {
+          const elapsed = last ? (now - last) / 1000 : 0,
+            dt = Math.min(elapsed, 0.05)
+          last = now
+          const cfg = config.current,
+            s = simulation.current
+          if ((!cfg.canPlay() || elapsed > 0.5) && !cfg.paused) {
+            cfg.paused = true
+            setPaused(true)
+          }
+          if (!cfg.paused && !s.won) {
+            acc += dt
+            s.time += dt
+            while (acc >= 1 / 120) {
               const removed = advance(bodies.current, 1 / 120)
               if (removed.size) {
-                for (const b of bodies.current)
+                bodies.current.forEach((b) => {
                   if (removed.has(b.id))
-                    effects.push({ x: b.x, y: b.y, age: 0 })
+                    s.effects.push({ x: b.x, y: b.y, age: 0 })
+                })
                 bodies.current = bodies.current.filter(
                   (b) => !removed.has(b.id),
                 )
+                s.losses += removed.size
                 setCount(bodies.current.length)
+                setLosses(s.losses)
                 setMessage(
-                  [...removed.values()][0] +
-                    '. Adjust your launch and try again.',
+                  `${[...removed.values()][0]}. Try a circular preset or a different lane.`,
                 )
               }
-              held = bodies.current.length >= 3 ? held + 1 / 120 : 0
-              if (held >= 30 && !celebrated) {
-                celebrated = true
+              s.held = missionReady(bodies.current, cfg.mission)
+                ? s.held + 1 / 120
+                : 0
+              if (s.held >= missions[cfg.mission].hold && !s.won) {
+                s.won = true
                 setWon(true)
+                setProgress(missions[cfg.mission].hold)
                 setMessage(
-                  'Constellation established! Three satellites held orbit for 30 seconds.',
+                  'Constellation established! Your satellites are in harmony.',
                 )
+                setSaved(
+                  saveGameRecord(
+                    'orbit-architect',
+                    cfg.mission,
+                    missionStars(s.losses),
+                  ),
+                )
+                acc = 0
+                break
               }
-              accumulator -= 1 / 120
+              acc -= 1 / 120
             }
             for (const b of bodies.current) {
               b.trail.push({ x: b.x, y: b.y })
               if (b.trail.length > 180) b.trail.shift()
             }
-            for (const e of effects) e.age += dt
-          }
-          ctx.clearRect(0, 0, 1000, 562)
-          ctx.drawImage(world, 0, 0, 1000, 562)
-          ctx.save()
-          ctx.translate(500, 281)
-          const preview = launch(
-            0,
-            cfg.radius,
-            cfg.position,
-            cfg.direction,
-            cfg.speed,
-          )
-          ctx.beginPath()
-          ctx.moveTo(preview.x, preview.y)
-          for (let i = 0; i < 1000; i++) {
-            step(preview, 0.04)
-            if (lost(preview)) break
-            ctx.lineTo(preview.x, preview.y)
-          }
-          ctx.strokeStyle = '#b5f4da66'
-          ctx.setLineDash([3, 6])
-          ctx.lineWidth = 1
-          ctx.stroke()
-          ctx.setLineDash([])
-          const start = launch(
-            0,
-            cfg.radius,
-            cfg.position,
-            cfg.direction,
-            cfg.speed,
-          )
-          ctx.strokeStyle = '#e4fff3'
-          ctx.beginPath()
-          ctx.moveTo(start.x, start.y)
-          ctx.lineTo(start.x + start.vx, start.y + start.vy)
-          ctx.stroke()
-          ctx.strokeRect(start.x - 5, start.y - 5, 10, 10)
-          for (const b of bodies.current) {
-            const color = `hsl(${(b.id * 67) % 360} 85% 78%)`
-            ctx.strokeStyle = color
-            ctx.lineWidth = 1.5
-            ctx.beginPath()
-            b.trail.forEach((p, i) =>
-              i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y),
+            s.effects = s.effects.filter((e) => {
+              e.age += dt
+              return e.age < 1
+            })
+            if (now - published > 100) {
+              setProgress(Math.min(s.held, missions[cfg.mission].hold))
+              setLanes(occupiedLanes(bodies.current))
+              published = now
+            }
+          } else acc = 0
+          if (
+            (!cfg.paused && !s.won) ||
+            drawnConfig !== cfg ||
+            drawnHeight !== el.height ||
+            drawnReduced !== motion.matches ||
+            drawnWon !== s.won
+          ) {
+            renderOrbit(
+              ctx,
+              world,
+              sprite,
+              bodies.current,
+              cfg.preview,
+              cfg,
+              s.effects,
+              s.time,
+              motion.matches,
+              s.won,
             )
-            ctx.stroke()
-            ctx.save()
-            ctx.translate(b.x, b.y)
-            ctx.rotate(Math.atan2(b.vy, b.vx))
-            if (!reduced) {
-              ctx.shadowColor = color
-              ctx.shadowBlur = 12
-            }
-            ctx.drawImage(sprite, -18, -9, 36, 18)
-            ctx.restore()
+            drawnConfig = cfg
+            drawnHeight = el.height
+            drawnReduced = motion.matches
+            drawnWon = s.won
           }
-          for (let i = effects.length - 1; i >= 0; i--) {
-            const e = effects[i]
-            if (e.age > 1) {
-              effects.splice(i, 1)
-              continue
-            }
-            if (reduced) continue
-            ctx.strokeStyle = `rgba(255,191,124,${1 - e.age})`
-            ctx.beginPath()
-            ctx.arc(e.x, e.y, 8 + e.age * 45, 0, Math.PI * 2)
-            ctx.stroke()
-          }
-          ctx.restore()
           frame = requestAnimationFrame(draw)
         }
         frame = requestAnimationFrame(draw)
@@ -161,178 +225,326 @@ export default function OrbitArchitectPage() {
       .catch(() => {
         if (!disposed) setError(true)
       })
+    const pause = () => {
+      config.current.paused = true
+      pointer.current = null
+      setPaused(true)
+    }
     const hide = () => {
-      if (document.hidden) setPaused(true)
+      if (document.hidden) pause()
     }
     document.addEventListener('visibilitychange', hide)
+    window.addEventListener('blur', pause)
     return () => {
       disposed = true
       cancelAnimationFrame(frame)
+      resize.disconnect()
+      cancelAnimationFrame(resizeFrame)
       document.removeEventListener('visibilitychange', hide)
+      window.removeEventListener('blur', pause)
     }
   }, [attempt])
   function send() {
-    if (!ready || paused || bodies.current.length >= 8) return
+    if (
+      !ready ||
+      paused ||
+      won ||
+      !session.canPlay() ||
+      bodies.current.length >= 8
+    )
+      return
     bodies.current.push(
       launch(nextId.current++, radius, position, direction, speed),
     )
     setCount(bodies.current.length)
-    setMessage('Satellite deployed. Watch its path before launching the next.')
+    setPosition((position + 137) % 360)
+    canvas.current?.scrollIntoView({ block: 'center', behavior: 'instant' })
+    canvas.current?.focus({ preventScroll: true })
+    setMessage(
+      'Satellite deployed. The next launch is spaced out; mix lanes for a safer constellation.',
+    )
   }
+  function reset(next = mission) {
+    bodies.current = []
+    nextId.current = 1
+    simulation.current = {
+      held: 0,
+      losses: 0,
+      won: false,
+      effects: [],
+      time: 0,
+    }
+    setCount(0)
+    setWon(false)
+    setProgress(0)
+    setLanes(0)
+    setLosses(0)
+    setMission(next)
+    setPaused(false)
+    setRadius(190)
+    setPosition(0)
+    setDirection(0)
+    setSpeed(31)
+    setMessage(missions[next].brief)
+  }
+  function aim(event: PointerEvent<HTMLCanvasElement>) {
+    if (
+      pointer.current !== event.pointerId ||
+      paused ||
+      won ||
+      !ready ||
+      !session.canPlay()
+    )
+      return
+    const el = event.currentTarget,
+      box = el.getBoundingClientRect(),
+      scale = el.height > 600 ? 1.5 : 1
+    const x =
+        (((event.clientX - box.left) * el.width) / box.width - el.width / 2) /
+        scale,
+      y =
+        (((event.clientY - box.top) * el.height) / box.height - el.height / 2) /
+        scale
+    const r = Math.round(Math.max(130, Math.min(245, Math.hypot(x, y))))
+    setRadius(r)
+    setPosition(Math.round(((Math.atan2(y, x) * 180) / Math.PI + 360) % 360))
+    setDirection(0)
+    setSpeed(Math.round(Math.sqrt(gravity / r)))
+  }
+  const m = missions[mission],
+    blocked = paused || won || !session.available
   return (
-    <div className="orbit-page">
-      <Link className="text-link" to="/games">
-        ← Back to arcade
-      </Link>
-      <div className="page-heading">
+    <GameShell
+      title="Orbit Architect"
+      subtitle="Find the balance. Build a constellation. Make the sky your own."
+      label="CELESTIAL DESIGN LAB / 03"
+      record={`Best ${saved.record.best} / 9 stars`}
+      error={saved.error}
+      session={session}
+    >
+      <div className="game-hud">
         <div>
-          <p className="eyebrow">CELESTIAL DESIGN LAB / 03</p>
-          <h1>
-            Orbit Architect<span>.</span>
-          </h1>
-          <p>
-            A little velocity. A delicate balance. A universe of possibilities.
-          </p>
+          <small>Mission {mission + 1} / 3</small>
+          <strong>{m.name}</strong>
+        </div>
+        <div>
+          <small>Constellation</small>
+          <strong>{count} / 8 satellites</strong>
+        </div>
+        <div>
+          <small>
+            Stability · {Math.floor(progress)} / {m.hold}s
+          </small>
+          <strong>
+            {lanes} / {m.bands} lanes
+          </strong>
+          <progress
+            aria-label="Constellation stability"
+            max={m.hold}
+            value={progress}
+          />
         </div>
       </div>
-      <div className="orbit-hud">
-        <span>{count} / 8 satellites</span>
-        <span>
+      <div className="game-stage">
+        <canvas
+          ref={canvas}
+          width={1000}
+          height={562}
+          tabIndex={0}
+          aria-label="Orbital simulation. Drag to place a circular launch. Space launches, P pauses."
+          onPointerDown={(e) => {
+            if (e.button !== 0 || pointer.current !== null) return
+            pointer.current = e.pointerId
+            e.currentTarget.setPointerCapture(e.pointerId)
+            e.currentTarget.focus({ preventScroll: true })
+            aim(e)
+          }}
+          onPointerMove={aim}
+          onPointerUp={() => {
+            pointer.current = null
+          }}
+          onPointerCancel={() => {
+            pointer.current = null
+          }}
+          onLostPointerCapture={() => {
+            pointer.current = null
+          }}
+          onKeyDown={(e) => {
+            if (e.repeat) return
+            if (e.key === ' ') {
+              e.preventDefault()
+              send()
+            }
+            if (e.key.toLowerCase() === 'p') {
+              e.preventDefault()
+              setPaused((p) => !p)
+            }
+          }}
+        />
+        <span className="game-stage-hint">
           {won
-            ? '✦ Constellation established'
-            : 'Mission: 3 satellites · 30 seconds'}
+            ? 'CONSTELLATION COMPLETE'
+            : paused
+              ? 'PAUSED'
+              : 'Drag to position · Space to launch · P to pause'}
         </span>
-        <span>{paused ? 'Simulation paused' : 'Gravity active'}</span>
       </div>
-      <canvas
-        ref={canvas}
-        width={1000}
-        height={562}
-        className="orbit-canvas"
-        aria-label="Orbital simulation with predicted launch path. Adjust the controls below to launch satellites."
-      />
-      {error ? (
-        <p role="alert">
-          Artwork could not load.{' '}
+      <div className="game-console">
+        {error ? (
+          <p role="alert">
+            Artwork could not load.{' '}
+            <button
+              className="button button--outline"
+              onClick={() => {
+                setError(false)
+                setAttempt((a) => a + 1)
+              }}
+            >
+              Retry artwork
+            </button>
+          </p>
+        ) : !ready ? (
+          <p>Preparing the orbital laboratory…</p>
+        ) : null}
+        <div className={`game-feedback ${won ? 'game-feedback--success' : ''}`}>
+          <div>
+            <span className="game-kicker">
+              {won
+                ? `${'★'.repeat(missionStars(losses))} MISSION COMPLETE`
+                : m.brief}
+            </span>
+            <p role="status">
+              {paused ? 'Simulation paused. Resume when ready.' : message}
+            </p>
+          </div>
+          {won && (
+            <button
+              className="button button--primary"
+              onClick={() => reset((mission + 1) % missions.length)}
+            >
+              {mission < 2 ? 'Next mission' : 'Play missions again'}
+            </button>
+          )}
+        </div>
+        <div className="game-presets" aria-label="Orbit lane presets">
+          {[
+            { r: 150, label: 'Inner lane' },
+            { r: 190, label: 'Middle lane' },
+            { r: 235, label: 'Outer lane' },
+          ].map((p) => (
+            <button
+              key={p.r}
+              disabled={blocked}
+              onClick={() => {
+                setRadius(p.r)
+                setDirection(0)
+                setSpeed(Math.round(Math.sqrt(gravity / p.r)))
+              }}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <section className="game-controls" aria-label="Launch controls">
+          {[
+            {
+              label: 'Launch radius',
+              value: radius,
+              set: setRadius,
+              min: 130,
+              max: 245,
+              unit: ' units',
+            },
+            {
+              label: 'Launch position',
+              value: position,
+              set: setPosition,
+              min: 0,
+              max: 359,
+              unit: '°',
+            },
+            {
+              label: 'Direction from tangent',
+              value: direction,
+              set: setDirection,
+              min: -180,
+              max: 180,
+              unit: '°',
+            },
+            {
+              label: 'Launch velocity',
+              value: speed,
+              set: setSpeed,
+              min: 5,
+              max: 65,
+              unit: ' units/s',
+            },
+          ].map((c) => (
+            <label key={c.label}>
+              {c.label}
+              <strong>
+                {c.value}
+                {c.unit}
+              </strong>
+              <input
+                type="range"
+                min={c.min}
+                max={c.max}
+                value={c.value}
+                disabled={blocked}
+                onChange={(e) => c.set(Number(e.target.value))}
+              />
+            </label>
+          ))}
+        </section>
+        <div className="game-actions">
           <button
+            className="button button--primary"
+            disabled={!ready || blocked || count >= 8}
+            onClick={send}
+          >
+            Launch satellite
+          </button>
+          <button
+            className="button button--outline"
+            disabled={blocked}
             onClick={() => {
-              setError(false)
-              setAttempt((a) => a + 1)
+              setDirection(0)
+              setSpeed(Math.round(Math.sqrt(gravity / radius)))
             }}
           >
-            Retry artwork
+            Circular orbit preset
           </button>
-        </p>
-      ) : !ready ? (
-        <p role="status">Preparing the orbital laboratory…</p>
-      ) : null}
-      <p role="status" className="orbit-message">
-        {message}
-      </p>
-      <section className="orbit-controls" aria-label="Launch controls">
-        {[
-          {
-            label: 'Launch radius',
-            value: radius,
-            set: setRadius,
-            min: 130,
-            max: 245,
-            unit: ' units',
-          },
-          {
-            label: 'Launch position',
-            value: position,
-            set: setPosition,
-            min: 0,
-            max: 359,
-            unit: '°',
-          },
-          {
-            label: 'Direction from tangent',
-            value: direction,
-            set: setDirection,
-            min: -180,
-            max: 180,
-            unit: '°',
-          },
-          {
-            label: 'Launch velocity',
-            value: speed,
-            set: setSpeed,
-            min: 5,
-            max: 65,
-            unit: ' units/s',
-          },
-        ].map((c) => (
-          <label key={c.label}>
-            {c.label}
-            <strong>
-              {c.value}
-              {c.unit}
-            </strong>
-            <input
-              type="range"
-              min={c.min}
-              max={c.max}
-              value={c.value}
-              onChange={(e) => c.set(Number(e.target.value))}
-            />
-          </label>
-        ))}
-      </section>
-      <div className="orbit-actions">
-        <button
-          className="button button--primary"
-          disabled={!ready || paused || count >= 8}
-          onClick={send}
-        >
-          Launch satellite
-        </button>
-        <button
-          className="button button--outline"
-          onClick={() => {
-            setDirection(0)
-            setSpeed(Math.round(Math.sqrt(gravity / radius)))
-          }}
-        >
-          Circular orbit preset
-        </button>
-        <button
-          className="button button--outline"
-          disabled={!ready}
-          onClick={() => setPaused(!paused)}
-        >
-          {paused ? 'Resume' : 'Pause'}
-        </button>
-        <button
-          className="button button--outline"
-          onClick={() => {
-            bodies.current = []
-            setCount(0)
-            setWon(false)
-            setPaused(false)
-            setAttempt((a) => a + 1)
-            setReady(false)
-            setMessage('Laboratory reset. Try a different constellation.')
-          }}
-        >
-          Reset simulation
-        </button>
+          <button
+            className="button button--outline"
+            disabled={!ready || won || !session.available}
+            onClick={() => setPaused(!paused)}
+          >
+            {paused ? 'Resume' : 'Pause'}
+          </button>
+          <button className="button button--outline" onClick={() => reset()}>
+            Reset simulation
+          </button>
+        </div>
       </div>
-      <details className="orbit-guide">
-        <summary>Flight manual</summary>
+      <details className="game-guide">
+        <summary>Flight manual & mission rewards</summary>
         <p>
-          Direction 0° follows the tangent; ±90° aims toward or away from the
-          planet. More speed makes wider orbits, too little falls inward, and
-          too much escapes. The dashed path predicts a single satellite’s
-          motion; it does not predict collisions with other satellites. Launch
-          from different positions or radii to avoid collisions. The circular
-          preset is a helpful starting point. Keep three satellites alive
-          together for 30 simulation seconds to complete the challenge. Leaving
-          the tab pauses the simulation. Progress resets when you leave this
-          page.
+          Tap or drag around the planet to place a circular launch; use the
+          sliders for experimental paths. Launch with the button or focus the
+          sky and press Space. P pauses. The next launch moves 137° around the
+          planet to help avoid collisions. Inner, middle, and outer lanes sit at
+          150, 190, and 235 units. Keep the required satellite count and lanes
+          occupied continuously; losing the formation resets stability.
+        </p>
+        <p>
+          Earn three stars with no lost satellites, two with up to two losses,
+          or one for completing the mission. Your best stars for each mission
+          stay in this browser. Live constellations reset when leaving the page.
+          Predicted paths do not account for other satellites. Break play pauses
+          with your Pomodoro timer; free play is always available.
         </p>
       </details>
-    </div>
+    </GameShell>
   )
 }

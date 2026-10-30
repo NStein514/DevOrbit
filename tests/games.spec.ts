@@ -149,7 +149,7 @@ test('Pomodoro activity saves and starts the selected break without affecting fo
   await page.getByRole('button', { name: 'Save preferences' }).click()
   await page.reload()
   await expect(page.getByLabel('Break activity')).toHaveValue('asteroid-escape')
-  await expect(page.getByText('Your spaceship will be ready')).toBeVisible()
+  await expect(page.getByText('Your game will be ready')).toBeVisible()
   await page.getByRole('button', { name: 'Short break', exact: true }).click()
   await page.getByRole('link', { name: 'Play this break' }).click()
   await expect(page).toHaveURL(/asteroid-escape\?mode=break$/)

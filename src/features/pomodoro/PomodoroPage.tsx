@@ -13,6 +13,7 @@ import { ConfirmDialog } from '../kanban/ConfirmDialog'
 import { usePomodoro } from './context'
 import {
   defaults,
+  breakActivities,
   formatTime,
   labels,
   settingsSchema,
@@ -178,14 +179,11 @@ export default function PomodoroPage() {
           {timer.settings.breakActivity !== 'none' && (
             <div className="pomodoro-break-game">
               <h3>
-                Your break:{' '}
-                {timer.settings.breakActivity === 'lunar-landing'
-                  ? 'Lunar Landing'
-                  : 'Asteroid Escape'}
+                Your break: {breakActivities[timer.settings.breakActivity]}
               </h3>
               <p>
                 {timer.phase === 'focus'
-                  ? 'Your spaceship will be ready when your next break begins.'
+                  ? 'Your game will be ready when your next break begins.'
                   : 'Your adventure starts or resumes this break, and ends when the timer does.'}
               </p>
               {timer.phase !== 'focus' && !blocked ? (
@@ -332,6 +330,8 @@ function SettingsForm({ settings }: { settings: Settings }) {
             <option value="none">Quiet break</option>
             <option value="asteroid-escape">Play Asteroid Escape</option>
             <option value="lunar-landing">Play Lunar Landing</option>
+            <option value="orbit-architect">Play Orbit Architect</option>
+            <option value="gravity-golf">Play Gravity Golf</option>
           </select>
         </label>
         <div className="pomodoro-fields">

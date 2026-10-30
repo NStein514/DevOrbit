@@ -6,17 +6,29 @@ import { formatTime } from '../pomodoro/model'
 import { art } from './art'
 import { lunarArt } from './lunar/art'
 import { ARCADE_KEY, readRecord } from './records'
+import { readGameRecord } from './shared/records'
+import './shared/play.css'
 import './games.css'
 import './lunar/lunar.css'
 
 const futureGames = ['Cosmic Cleanup', 'Planet Pop', 'Solar Surfer']
 export default function ArcadePage() {
   const [saved, setSaved] = useState(readRecord)
+  const [orbit, setOrbit] = useState(() => readGameRecord('orbit-architect'))
+  const [golf, setGolf] = useState(() => readGameRecord('gravity-golf'))
   const { timer, remaining, blocked } = usePomodoro()
   const breakReady =
-    !blocked && timer.phase !== 'focus' && timer.deadline !== null
+    !blocked &&
+    timer.phase !== 'focus' &&
+    timer.deadline !== null &&
+    remaining > 0 &&
+    timer.settings.breakActivity !== 'none'
   useEffect(() => {
     const sync = (event: StorageEvent) => {
+      if (event.key === 'devorbit.orbit-architect.v1' || event.key === null)
+        setOrbit(readGameRecord('orbit-architect'))
+      if (event.key === 'devorbit.gravity-golf.v1' || event.key === null)
+        setGolf(readGameRecord('gravity-golf'))
       if (event.key === ARCADE_KEY || event.key === null) setSaved(readRecord())
     }
     window.addEventListener('storage', sync)
@@ -116,14 +128,14 @@ export default function ArcadePage() {
           <p>
             {breakReady
               ? `${formatTime(remaining)} left in your break. Break play ends when your timer does.`
-              : 'Choose Asteroid Escape or Lunar Landing as your Pomodoro break activity. Your timer keeps the adventure on schedule.'}
+              : 'Choose any of the four games as your Pomodoro break activity. Your timer keeps the adventure on schedule.'}
           </p>
         </div>
         <Link
           className="button button--outline"
           to={
             breakReady
-              ? `/games/${timer.settings.breakActivity === 'lunar-landing' ? 'lunar-landing' : 'asteroid-escape'}?mode=break`
+              ? `/games/${timer.settings.breakActivity}?mode=break`
               : '/pomodoro'
           }
         >
@@ -131,37 +143,84 @@ export default function ArcadePage() {
           <ArrowRight size={16} />
         </Link>
       </section>
-      <section className="arcade-feature">
-        <img
-          src="/images/arcade/orbit/world.png"
-          alt="Turquoise planet in a star field"
-          style={{ width: '100%', borderRadius: 16 }}
-        />
+      <section
+        className="arcade-feature orbit-card"
+        aria-labelledby="orbit-title"
+      >
         <div className="arcade-feature-copy">
-          <span className="arcade-live">NOW BOARDING · ORBITAL SANDBOX</span>
-          <h2>Orbit Architect</h2>
+          <span className="arcade-live">
+            NOW BOARDING · CONSTELLATION MISSIONS
+          </span>
+          <h2 id="orbit-title">
+            Orbit
+            <br />
+            Architect
+          </h2>
           <p>
-            Launch tiny satellites. Shape their paths. Build a constellation
-            that lasts.
+            A sky full of possibilities. Build layered constellations, keep them
+            stable, and earn your stars.
           </p>
+          <div className="arcade-chips">
+            <span>Mouse + touch + keyboard</span>
+            <span>3 missions</span>
+            <span>9 stars to earn</span>
+          </div>
           <Link className="button arcade-launch" to="/games/orbit-architect">
             Play Orbit Architect <ArrowRight size={18} />
           </Link>
+          <span className="arcade-record">
+            <Trophy size={16} /> Personal best: {orbit.record.best} / 9 stars
+          </span>
         </div>
       </section>
-      <section className="arcade-break-card">
-        <Gamepad2 size={32} />
-        <div>
-          <h2>Gravity Golf</h2>
+      <section
+        className="arcade-feature golf-card"
+        aria-labelledby="golf-title"
+      >
+        <div className="arcade-feature-art" aria-hidden="true">
+          <img
+            className="golf-cover-hole"
+            src="/images/arcade/golf/black-hole.png"
+            alt=""
+          />
+          <img
+            className="golf-cover-planet"
+            src="/images/arcade/golf/planet.png"
+            alt=""
+          />
+        </div>
+        <div className="arcade-feature-copy">
+          <span className="arcade-live">NOW BOARDING · COSMIC PRECISION</span>
+          <h2 id="golf-title">
+            Gravity
+            <br />
+            Golf
+          </h2>
           <p>
-            Slingshot a tiny comet around planets into a black hole. Three
-            holes. A universe of curves.
+            Read the pull of distant worlds. Bend a comet into the darkness. Six
+            holes, one perfect curve to chase.
           </p>
+          <div className="arcade-chips">
+            <span>Drag to aim</span>
+            <span>6 cosmic holes</span>
+            <span>Personal bests</span>
+          </div>
+          <Link className="button arcade-launch" to="/games/gravity-golf">
+            Play Gravity Golf <ArrowRight size={18} />
+          </Link>
+          <span className="arcade-record">
+            <Trophy size={16} />{' '}
+            {golf.record.best
+              ? `Best course: ${golf.record.best} strokes`
+              : 'Your first course record awaits'}
+          </span>
         </div>
-        <Link className="button button--primary" to="/games/gravity-golf">
-          Play Gravity Golf <ArrowRight size={18} />
-        </Link>
       </section>
+      {(orbit.error || golf.error) && (
+        <p role="alert" className="arcade-notice">
+          {orbit.error || golf.error}
+        </p>
+      )}
       <section className="arcade-future" aria-labelledby="future-games">
         <p className="eyebrow">MORE WORLDS ON THE HORIZON</p>
         <h2 id="future-games">The next adventures</h2>

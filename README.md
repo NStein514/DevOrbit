@@ -316,7 +316,7 @@ tests/game-engine.spec.ts       # Deterministic movement, collision, heat, spawn
 
 Feature-specific components, types, and future API adapters live together. Broadly reusable UI lives in `components/`. The UI uses semantic HTML, visible keyboard focus, a skip link, native modal focus management, and reduced-motion support.
 
-React Router provides `/`, `/settings`, `/pomodoro`, `/games`, `/games/asteroid-escape`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, `/projects/:projectId/bugs/:bugId`, `/milestones`, `/projects/:projectId/milestones`, `/projects/:projectId/milestones/:milestoneId`, `/github`, `/projects/:projectId/github`, `/changelog`, `/projects/:projectId/changelog`, and `/projects/:projectId/changelog/:changelogId`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, reports, milestones, or changelogs have recovery links.
+React Router provides `/`, `/settings`, `/pomodoro`, `/games`, `/games/asteroid-escape`, `/games/lunar-landing`, `/games/orbit-architect`, `/games/gravity-golf`, `/boards`, `/projects/:projectId/boards/:boardId`, `/bugs`, `/projects/:projectId/bugs`, `/projects/:projectId/bugs/:bugId`, `/milestones`, `/projects/:projectId/milestones`, `/projects/:projectId/milestones/:milestoneId`, `/github`, `/projects/:projectId/github`, `/changelog`, `/projects/:projectId/changelog`, and `/projects/:projectId/changelog/:changelogId`. Vite serves direct application URLs in development and preview; a production host must rewrite application routes to `index.html`. Unknown routes and missing boards, projects, reports, milestones, or changelogs have recovery links.
 
 The appearance provider applies CSS variables at the document root so all pages and modal dialogs share the same theme. Stored preferences apply before React mounts; the artwork is tinted through CSS and the favicon is updated with a local SVG data URL. No extra artwork downloads or external requests are needed when changing accents.
 
@@ -335,7 +335,9 @@ Typography uses self-hosted DM Sans and Manrope through Fontsource. Fonts and or
 - **Customizable Pomodoro Timer (implemented):** adjustable focus/break durations, session cadence, automatic starts, sound/volume, daily goals, project intentions, and persistent session history.
 - **Games arcade / Asteroid Escape (implemented):** keyboard/touch survival game, original generated art, energy/heat tradeoffs, personal records, and Pomodoro break play.
 - **Lunar Landing (implemented):** fuel-limited precision landings, generated terrain, escalating gravity, original art, and Pomodoro breaks.
-- **More arcade games (planned):** Orbit Architect, Gravity Golf, Cosmic Cleanup, Planet Pop, and Solar Surfer.
+- **Orbit Architect (implemented):** three constellation missions, direct placement, layered orbits, persistent stars, and Pomodoro breaks.
+- **Gravity Golf (implemented):** six gravity puzzles, touch aiming, scorecards, persistent bests, and Pomodoro breaks.
+- **More arcade games (planned):** Cosmic Cleanup, Planet Pop, and Solar Surfer.
 
 Before adding cloud workspace sync, establish persistent workspace storage and DevOrbit account authentication. GitHub credentials already stay behind the backend; never expose secrets in the browser bundle.
 
@@ -345,12 +347,26 @@ Use your own Git identity for commits. This project does not configure an author
 
 ## Orbit Architect
 
-Open **Games arcade → Play Orbit Architect**, or `/games/orbit-architect`. Set launch radius, position, direction relative to the tangent, and velocity. A dashed trajectory previews your launch; the circular preset provides a starting point. Keep three satellites alive together for 30 simulation seconds to establish a constellation. Planet impacts, satellite collisions, and escapes remove satellites. Up to eight can fly at once.
+Open **Games arcade → Play Orbit Architect**, or `/games/orbit-architect`. Build three increasingly complex constellations: three satellites for 12 seconds, four across two lanes for 15 seconds, then six across all three lanes for 18 seconds. Live stability progress resets if the formation breaks. Complete each mission to advance; reset retries the current mission. Earn three stars without losing satellites, two with up to two losses, or one for completion.
 
-The simulation uses fixed-step gravity, animated trails, collision rings, and original generated planet/background and satellite artwork. Reduced-motion preferences suppress decorative glow and collision rings. Pause/resume and reset are available, and switching tabs automatically pauses. Sliders support keyboard and touch. This initial sandbox is session-only; leaving the page clears the constellation.
+Tap or drag around the planet to place a circular launch. Inner/middle/outer presets select stable orbits at 150/190/235 units; sliders adjust radius, position, direction relative to the tangent, and velocity. Each launch advances the position by 137° to help separate satellites. Up to eight can fly at once. Planet impacts, satellite collisions, and escapes remove satellites. The preview predicts the selected satellite only, not collisions with other satellites.
+
+Original Image Generator planet and satellite artwork is enhanced with orbital lanes, atmospheric glow, trails, collision particles, and a completed constellation outline. A taller phone canvas keeps the planet and satellites readable. The preview is computed when launch settings change, while physics uses fixed time steps. Focus the canvas and press **Space** to launch or **P** to pause. Sliders also support keyboard input.
 
 ## Gravity Golf
 
-Open **Games arcade → Play Gravity Golf**, or `/games/gravity-golf`. Adjust shot angle and power to slingshot a comet around planets into the purple black hole. Three holes introduce different gravity fields; total course par is eight. Every launch counts as a stroke, including abandoned shots. Failed shots return to the same tee on the next launch. Capture unlocks the next hole and the final hole shows your course total.
+Open **Games arcade → Play Gravity Golf**, or `/games/gravity-golf`. Slingshot a comet around planets into a black hole across six holes (course par 18). Drag right anywhere on the course to aim, upward/downward to change direction, and farther to increase power. Release to keep the aim, then press **Launch comet**. Fine-tune with the angle/power sliders. With the canvas focused, use **Left/Right** for angle, **Up/Down** for power, **Space** to launch, and **P** to pause.
 
-The optional dashed preview uses the same fixed-step simulation as live flight. Planet impacts, leaving the course, or 18 seconds in flight end a shot. Pause/resume, abandon shot, and restart are supported. Switching tabs automatically pauses. Original Image Generator assets supply the starfield, planet, comet, black hole, and particle texture. The renderer animates planet rotation, the accretion disk, fading comet wakes, impact particles, and capture spirals. Pausing freezes these effects; reduced motion disables decorative rotation and particle bursts. Failed artwork loads can be retried without losing course progress. Keyboard/touch sliders work on desktop and mobile. Progress is session-only and resets on leaving the page.
+The optional path preview uses the same fixed-step physics as live flight, marks the predicted endpoint, and explains whether the shot will capture, collide, escape, or loop. A faint trace of the previous attempt helps plan the next shot. Disable the preview for an extra challenge. Every launch counts, including abandoned shots. Impacts, escapes, or 18 seconds in flight end an attempt; the next launch starts from the tee. Capture unlocks the next hole. The scorecard shows completed strokes and stars: under par earns three, at par two, and above par one.
+
+Original Image Generator artwork supplies the nebula, planets, comet, black hole, and particle texture. Gravity fields and orbiting particles show planetary influence; the comet has a luminous wake, and impacts/captures have distinct particle effects. Generated artwork is reused locally; no external image service is needed at runtime.
+
+### Shared arcade behavior
+
+Both games support mouse, touch, keyboard, expanded play areas, Light/Dark/System app themes, and reduced-motion preferences. Expand the play area for fewer distractions; on phones, landscape gives Gravity Golf a wider course. Escape exits expanded view and restores button focus. Switching tabs, losing window focus, or a long frame gap pauses play. Reduced motion suppresses decorative movement and particles while keeping physics playable. Artwork failures show a retry action.
+
+Choose either game in **Pomodoro → Break activity → Save preferences**. The arcade and timer link to the selected game with `?mode=break`. Break play pauses when the timer is paused, expires, changes to focus, or becomes unavailable; launching/resuming requires a running break. Resume manually after restarting a break, or select **Free play** to continue without a timer.
+
+Best mission/hole stars are stored in `devorbit.orbit-architect.v1` and `devorbit.gravity-golf.v1`; Golf also stores the lowest completed six-hole stroke count. Bests appear in the arcade and survive reloads. Live missions and unfinished courses reset on leaving the page. Records remain local to this browser; malformed data is preserved and storage failures show a warning without blocking play.
+
+Validate these features with `npm run lint`, `npm run build`, and `npx playwright test tests/orbit.spec.ts tests/golf.spec.ts tests/arcade-enhancements.spec.ts tests/games.spec.ts tests/lunar.spec.ts tests/pomodoro.spec.ts`. Browser tests cover desktop/mobile gameplay, all course solutions, mission progression, persistent records, touch aiming, focus loss, reduced motion, artwork retry, and Pomodoro break expiration.

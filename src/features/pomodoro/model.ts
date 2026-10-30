@@ -6,6 +6,13 @@ export const labels = {
   short: 'Short break',
   long: 'Long break',
 }
+export const breakActivities = {
+  none: 'Quiet break',
+  'asteroid-escape': 'Asteroid Escape',
+  'lunar-landing': 'Lunar Landing',
+  'orbit-architect': 'Orbit Architect',
+  'gravity-golf': 'Gravity Golf',
+}
 export type Phase = keyof typeof labels
 export const settingsSchema = z.object({
   focus: z.number().int().min(1).max(180),
@@ -18,7 +25,13 @@ export const settingsSchema = z.object({
   sound: z.boolean(),
   volume: z.number().int().min(0).max(100),
   breakActivity: z
-    .enum(['none', 'asteroid-escape', 'lunar-landing'])
+    .enum([
+      'none',
+      'asteroid-escape',
+      'lunar-landing',
+      'orbit-architect',
+      'gravity-golf',
+    ])
     .default('none'),
 })
 export type Settings = z.infer<typeof settingsSchema>

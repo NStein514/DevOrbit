@@ -48,7 +48,54 @@ export const holes: Hole[] = [
       { x: 680, y: 200, radius: 45, mass: 170000, color: '#dfa6d2' },
     ],
   },
+  {
+    name: 'Binary drift',
+    par: 3,
+    tee: { x: 100, y: 450 },
+    target: { x: 880, y: 130 },
+    planets: [
+      { x: 360, y: 260, radius: 55, mass: 240000, color: '#8ccdec' },
+      { x: 680, y: 360, radius: 48, mass: 260000, color: '#d7a4ee' },
+    ],
+  },
+  {
+    name: 'Needle thread',
+    par: 3,
+    tee: { x: 100, y: 280 },
+    target: { x: 900, y: 280 },
+    planets: [
+      { x: 420, y: 140, radius: 60, mass: 270000, color: '#f0ba87' },
+      { x: 500, y: 420, radius: 60, mass: 270000, color: '#8ccdec' },
+      { x: 720, y: 160, radius: 40, mass: 150000, color: '#d7a4ee' },
+    ],
+  },
+  {
+    name: 'Event horizon',
+    par: 4,
+    tee: { x: 100, y: 450 },
+    target: { x: 890, y: 110 },
+    planets: [
+      { x: 370, y: 330, radius: 60, mass: 300000, color: '#8ccdec' },
+      { x: 620, y: 150, radius: 50, mass: 220000, color: '#d7a4ee' },
+      { x: 740, y: 390, radius: 40, mass: 190000, color: '#f0ba87' },
+    ],
+  },
 ]
+export const coursePar = holes.reduce((sum, h) => sum + h.par, 0)
+export function holeStars(strokes: number, par: number) {
+  return strokes <= par - 1 ? 3 : strokes <= par ? 2 : 1
+}
+export function shotRating(strokes: number, par: number) {
+  if (strokes === 1) return 'Hole in one!'
+  const difference = strokes - par
+  return difference <= -2
+    ? 'Eagle!'
+    : difference === -1
+      ? 'Birdie!'
+      : difference === 0
+        ? 'Right on par!'
+        : `Hole complete · +${difference}`
+}
 export function shoot(hole: Hole, angle: number, power: number): Comet {
   const a = (angle * Math.PI) / 180
   return {
