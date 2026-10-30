@@ -1,3 +1,5 @@
+import { renderHazards } from '../shared/renderHazards'
+import type { Hazard } from '../shared/hazards'
 import { launch, type Satellite } from './engine'
 export type OrbitEffect = { x: number; y: number; age: number }
 export function renderOrbit(
@@ -16,6 +18,9 @@ export function renderOrbit(
   time: number,
   reduced: boolean,
   won: boolean,
+  hazards: Hazard[],
+  debris: HTMLImageElement,
+  danger: boolean,
 ) {
   const { width, height } = ctx.canvas
   const scale = height > 600 ? 1.5 : 1
@@ -56,13 +61,21 @@ export function renderOrbit(
     ctx.arc(0, 0, 116, -time * 0.1, -time * 0.1 + 0.5)
     ctx.stroke()
   }
-  ctx.strokeStyle = '#bdffdd88'
+  renderHazards(ctx, hazards, time, debris, reduced)
+  ctx.strokeStyle = danger ? '#ffb987' : '#bdffdd88'
   ctx.lineWidth = 1.5
   ctx.setLineDash([3, 6])
   ctx.beginPath()
   preview.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)))
   ctx.stroke()
   ctx.setLineDash([])
+  if (danger && preview.length) {
+    const end = preview[preview.length - 1]
+    ctx.strokeStyle = '#ffb987'
+    ctx.beginPath()
+    ctx.arc(end.x, end.y, 8, 0, Math.PI * 2)
+    ctx.stroke()
+  }
   const start = launch(
     0,
     settings.radius,

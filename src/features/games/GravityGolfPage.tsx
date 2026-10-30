@@ -27,6 +27,8 @@ import './golf/golf.css'
 const messages: Record<Outcome, string> = {
   flying: 'Comet in flight…',
   sunk: 'In the black hole! Nicely curved.',
+  debris:
+    'Debris impact. Wait for the asteroid to pass or bend your shot around its route.',
   collision: 'Planet impact. Try a wider curve or a little more power.',
   escaped: 'Your comet left the course. Try a gentler shot.',
   timeout: 'Orbit trapped! Adjust your angle to break free.',
@@ -44,6 +46,8 @@ export default function GravityGolfPage() {
       'loading',
     ),
     [artAttempt, setArtAttempt] = useState(0)
+  const fieldTime = useRef(0)
+  const [forecastTime, setForecastTime] = useState(0)
   const [saved, setSaved] = useState(() => readGameRecord('gravity-golf'))
   const session = useGameSession()
   const sprites = useRef<GolfSprites | null>(null)
@@ -76,7 +80,10 @@ export default function GravityGolfPage() {
     power: number
   } | null>(null)
   const h = holes[index],
-    forecast = useMemo(() => prediction(h, angle, power), [h, angle, power])
+    forecast = useMemo(
+      () => prediction(h, angle, power, forecastTime),
+      [h, angle, power, forecastTime],
+    )
   const view = useRef({
     index,
     paused,
@@ -84,6 +91,7 @@ export default function GravityGolfPage() {
     showPreview,
     outcome,
     strokes,
+    artState,
     canPlay: session.canPlay,
   })
   useLayoutEffect(() => {
@@ -94,14 +102,25 @@ export default function GravityGolfPage() {
       showPreview,
       outcome,
       strokes,
+      artState,
       canPlay: session.canPlay,
     }
-  }, [index, paused, forecast, showPreview, outcome, strokes, session.canPlay])
+  }, [
+    index,
+    paused,
+    forecast,
+    showPreview,
+    outcome,
+    strokes,
+    artState,
+    session.canPlay,
+  ])
   useEffect(() => {
     let frame = 0,
       last = 0,
       acc = 0,
       visualTime = 0,
+      published = 0,
       effectAge = 0,
       previousOutcome: Outcome | null = null
     const ctx = canvas.current!.getContext('2d')!,
@@ -118,30 +137,46 @@ export default function GravityGolfPage() {
         v.paused = true
         setPaused(true)
       }
-      if (flying.current && !v.paused && body.current) {
+      if (!v.paused && v.artState === 'ready' && v.outcome !== 'sunk') {
         acc += dt
-        while (acc >= 1 / 120 && flying.current) {
-          const result = advance(body.current, holes[v.index], 1 / 120)
+        while (acc >= 1 / 120) {
+          fieldTime.current += 1 / 120
           acc -= 1 / 120
-          if (result !== 'flying') {
-            flying.current = false
-            setOutcome(result)
-            if (result === 'sunk')
-              setSaved(
-                saveGameRecord(
-                  'gravity-golf',
-                  v.index,
-                  holeStars(v.strokes[v.index], holes[v.index].par),
-                  v.index === holes.length - 1
-                    ? v.strokes.reduce((a, b) => a + b, 0)
-                    : 0,
-                ),
-              )
+          if (flying.current && body.current) {
+            const result = advance(body.current, holes[v.index], 1 / 120)
+            if (result !== 'flying') {
+              flying.current = false
+              setOutcome(result)
+              if (result === 'sunk') {
+                setSaved(
+                  saveGameRecord(
+                    'gravity-golf',
+                    v.index,
+                    holeStars(v.strokes[v.index], holes[v.index].par),
+                    v.index === holes.length - 1
+                      ? v.strokes.reduce((a, b) => a + b, 0)
+                      : 0,
+                  ),
+                )
+                acc = 0
+                break
+              }
+            }
           }
         }
-        trail.current.push({ x: body.current.x, y: body.current.y })
-        if (trail.current.length > 350) trail.current.shift()
-      } else acc = 0
+        if (body.current && v.outcome === 'flying') {
+          trail.current.push({ x: body.current.x, y: body.current.y })
+          if (trail.current.length > 350) trail.current.shift()
+        }
+        if (!flying.current && now - published >= 100) {
+          setForecastTime(fieldTime.current)
+          published = now
+        }
+      } else {
+        acc = 0
+        if (!flying.current && v.forecast.launchTime !== fieldTime.current)
+          setForecastTime(fieldTime.current)
+      }
       if (v.outcome !== previousOutcome) {
         effectAge = 0
         previousOutcome = v.outcome
@@ -171,6 +206,7 @@ export default function GravityGolfPage() {
           effectAge,
           previous.current,
           v.forecast.outcome,
+          fieldTime.current,
         )
         drawnView = v
         drawnSprites = sprites.current
@@ -205,7 +241,7 @@ export default function GravityGolfPage() {
     )
       return
     previous.current = [...trail.current]
-    body.current = shoot(h, angle, power)
+    body.current = shoot(h, angle, power, fieldTime.current)
     trail.current = []
     flying.current = true
     setOutcome('flying')
@@ -216,6 +252,8 @@ export default function GravityGolfPage() {
     canvas.current?.focus({ preventScroll: true })
   }
   function reset(next = 0) {
+    fieldTime.current = 0
+    setForecastTime(0)
     flying.current = false
     body.current = null
     trail.current = []
@@ -360,6 +398,17 @@ export default function GravityGolfPage() {
               : 'Drag right to aim · Longer drag = more power'}
         </span>
       </div>
+      <div className="game-hazards" aria-label="Debris field">
+        <span>
+          ⚠ {h.hazards.length} debris{' '}
+          {h.hazards.length === 1 ? 'hazard' : 'hazards'} · amber routes
+        </span>
+        <span>Wait for a gap. Hazards keep moving while you aim.</span>
+        <small>
+          Launch forecast at{' '}
+          <span data-testid="hazard-time">{forecastTime.toFixed(1)}</span>s
+        </small>
+      </div>
       <div className="game-console">
         {artState === 'loading' && <p>Loading cosmic artwork…</p>}
         {artState === 'error' && (
@@ -474,11 +523,13 @@ export default function GravityGolfPage() {
             {showPreview && !busy && outcome !== 'sunk'
               ? forecast.outcome === 'sunk'
                 ? 'Capture predicted ✦'
-                : forecast.outcome === 'collision'
-                  ? 'Trajectory meets a planet'
-                  : forecast.outcome === 'escaped'
-                    ? 'Trajectory leaves the course'
-                    : 'Trajectory loops into orbit'
+                : forecast.outcome === 'debris'
+                  ? 'Debris on this launch — wait for a gap'
+                  : forecast.outcome === 'collision'
+                    ? 'Trajectory meets a planet'
+                    : forecast.outcome === 'escaped'
+                      ? 'Trajectory leaves the course'
+                      : 'Trajectory loops into orbit'
               : 'Trust your instincts.'}
           </span>
         </div>
@@ -515,6 +566,15 @@ export default function GravityGolfPage() {
       </div>
       <details className="game-guide">
         <summary>How to play & earn stars</summary>
+        <p>
+          Amber rings mark solid debris; dashed amber tracks show moving
+          asteroid routes. They do not pull the comet, but hitting one ends the
+          shot. Waiting changes the opening without costing a stroke. The
+          preview refreshes while aiming and predicts where obstacles will be
+          when the comet reaches them. Pause freezes hazards too. Each new hole
+          or restart resets their timing; retries keep the field moving. Reduced
+          motion keeps essential hazard movement visible.
+        </p>
         <p>
           Drag right anywhere on the course to aim. Drag upward or downward for
           direction; a longer drag adds power. Release to keep your aim, then

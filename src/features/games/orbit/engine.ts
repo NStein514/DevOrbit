@@ -1,3 +1,4 @@
+import { hitsHazard, type Hazard } from '../shared/hazards.js'
 export interface Satellite {
   id: number
   x: number
@@ -43,12 +44,20 @@ export function lost(body: Satellite) {
       ? 'Escaped gravity'
       : null
 }
-export function advance(bodies: Satellite[], dt: number) {
+export function advance(
+  bodies: Satellite[],
+  dt: number,
+  hazards: Hazard[] = [],
+  time = 0,
+) {
   const removed = new Map<number, string>()
   for (const b of bodies) {
+    const from = { x: b.x, y: b.y }
     step(b, dt)
     const reason = lost(b)
     if (reason) removed.set(b.id, reason)
+    else if (hazards.some((h) => hitsHazard(from, b, 6, h, time, dt)))
+      removed.set(b.id, 'Debris collision')
   }
   for (let i = 0; i < bodies.length; i++)
     for (let j = i + 1; j < bodies.length; j++)
@@ -59,4 +68,25 @@ export function advance(bodies: Satellite[], dt: number) {
         removed.set(bodies[j].id, 'Satellite collision')
       }
   return removed
+}
+
+export function predictOrbit(
+  body: Satellite,
+  hazards: Hazard[],
+  time: number,
+  duration: number,
+) {
+  const points = [{ x: body.x, y: body.y }]
+  let reason: string | null = null
+  let seconds = 0
+  for (let i = 0; i < duration * 120; i++) {
+    const removed = advance([body], 1 / 120, hazards, time + i / 120)
+    seconds = (i + 1) / 120
+    if (i % 6 === 0 || removed.size) points.push({ x: body.x, y: body.y })
+    if (removed.size) {
+      reason = removed.get(body.id)!
+      break
+    }
+  }
+  return { points, reason, seconds, launchTime: time }
 }

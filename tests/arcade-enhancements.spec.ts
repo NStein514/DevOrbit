@@ -1,3 +1,4 @@
+import { setRange } from './helpers/arcade-controls.js'
 import { test, expect } from '@playwright/test'
 import { initialState, POMODORO_KEY } from '../src/features/pomodoro/model.js'
 import {
@@ -27,6 +28,15 @@ test('orbit missions progress, pause freezes stability, and stars persist', asyn
   test.setTimeout(90000)
   await page.clock.install()
   await page.goto('/games/orbit-architect')
+  await expect(
+    page.getByRole('button', { name: 'Launch satellite', exact: true }),
+  ).toBeEnabled()
+  await page.clock.pauseAt(
+    new Date((await page.evaluate(() => Date.now())) + 100),
+  )
+  await page
+    .getByRole('button', { name: 'Reset simulation', exact: true })
+    .click()
   for (let mission = 0; mission < 3; mission++) {
     const presets =
       mission === 0
@@ -41,6 +51,7 @@ test('orbit missions progress, pause freezes stability, and stars persist', asyn
               'Outer lane',
               'Outer lane',
             ]
+    await setRange(page, /Launch position/, [10, 10, 125][mission])
     for (const name of presets) {
       await page.getByRole('button', { name, exact: true }).click()
       await page
@@ -68,6 +79,7 @@ test('orbit missions progress, pause freezes stability, and stars persist', asyn
   await expect(
     page.getByText('Best 9 / 9 stars', { exact: true }),
   ).toBeVisible()
+  await page.clock.resume()
   await page.reload()
   await expect(
     page.getByText('Best 9 / 9 stars', { exact: true }),

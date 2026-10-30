@@ -361,6 +361,15 @@ The optional path preview uses the same fixed-step physics as live flight, marks
 
 Original Image Generator artwork supplies the nebula, planets, comet, black hole, and particle texture. Gravity fields and orbiting particles show planetary influence; the comet has a luminous wake, and impacts/captures have distinct particle effects. Generated artwork is reused locally; no external image service is needed at runtime.
 
+### Debris and launch timing
+
+Both games now include solid debris: amber collision rings, labeled hazards, and dashed amber routes distinguish them from planets and satellite trails. They reuse the original Image Generator asteroid artwork already bundled with the arcade.
+
+- **Orbit Architect:** one moving debris body in the opening mission, two crossing routes in the second, and an additional fixed fragment in the final mission. Debris impacts remove satellites and count toward mission losses. The preview forecasts debris collisions over the mission’s stability duration; wait for a gap or change the orbit/launch position. It does not forecast collisions with other satellites.
+- **Gravity Golf:** every hole has a moving asteroid, with additional moving or fixed obstructions on later holes. Debris has no gravitational pull, but a hit ends the shot and still counts as one stroke. Waiting while aiming costs nothing and changes which shots are safe. Retries keep the field moving; a new hole or course restart resets its timing.
+
+Hazards use the same fixed simulation clock as gameplay. They move while aiming, freeze on pause (including focus loss and Pomodoro interruptions), and restart when the mission/course is reset. Predictions update while aiming and simulate future obstacle positions from the displayed forecast time. Swept collision checks catch crossings between physics ticks. Reduced motion suppresses decorative tumbling/glow while retaining essential obstacle movement. Existing personal bests remain intact.
+
 ### Shared arcade behavior
 
 Both games support mouse, touch, keyboard, expanded play areas, Light/Dark/System app themes, and reduced-motion preferences. Expand the play area for fewer distractions; on phones, landscape gives Gravity Golf a wider course. Escape exits expanded view and restores button focus. Switching tabs, losing window focus, or a long frame gap pauses play. Reduced motion suppresses decorative movement and particles while keeping physics playable. Artwork failures show a retry action.
@@ -369,4 +378,4 @@ Choose either game in **Pomodoro → Break activity → Save preferences**. The 
 
 Best mission/hole stars are stored in `devorbit.orbit-architect.v1` and `devorbit.gravity-golf.v1`; Golf also stores the lowest completed six-hole stroke count. Bests appear in the arcade and survive reloads. Live missions and unfinished courses reset on leaving the page. Records remain local to this browser; malformed data is preserved and storage failures show a warning without blocking play.
 
-Validate these features with `npm run lint`, `npm run build`, and `npx playwright test tests/orbit.spec.ts tests/golf.spec.ts tests/arcade-enhancements.spec.ts tests/games.spec.ts tests/lunar.spec.ts tests/pomodoro.spec.ts`. Browser tests cover desktop/mobile gameplay, all course solutions, mission progression, persistent records, touch aiming, focus loss, reduced motion, artwork retry, and Pomodoro break expiration.
+Validate these features with `npm run lint`, `npm run build`, and `npx playwright test tests/orbit.spec.ts tests/golf.spec.ts tests/arcade-enhancements.spec.ts tests/hazards.spec.ts tests/games.spec.ts tests/lunar.spec.ts tests/pomodoro.spec.ts`. Browser tests cover desktop/mobile gameplay, all course solutions, mission progression, persistent records, touch aiming, focus loss, reduced motion, artwork retry, and Pomodoro break expiration.

@@ -9,13 +9,13 @@ import {
 import {
   advance,
   launch,
-  step,
-  lost,
+  predictOrbit,
   gravity,
   type Satellite,
 } from './orbit/engine'
 import {
   missions,
+  orbitHazards,
   missionReady,
   missionStars,
   occupiedLanes,
@@ -46,6 +46,7 @@ export default function OrbitArchitectPage() {
     [progress, setProgress] = useState(0),
     [lanes, setLanes] = useState(0),
     [losses, setLosses] = useState(0)
+  const [forecastTime, setForecastTime] = useState(0)
   const [saved, setSaved] = useState(() => readGameRecord('orbit-architect'))
   const simulation = useRef({
     held: 0,
@@ -56,16 +57,16 @@ export default function OrbitArchitectPage() {
   })
   const pointer = useRef<number | null>(null)
   const session = useGameSession()
-  const preview = useMemo(() => {
-    const body = launch(0, radius, position, direction, speed),
-      points = [{ x: body.x, y: body.y }]
-    for (let i = 0; i < 1000; i++) {
-      step(body, 0.04)
-      if (lost(body)) break
-      points.push({ x: body.x, y: body.y })
-    }
-    return points
-  }, [radius, position, direction, speed])
+  const preview = useMemo(
+    () =>
+      predictOrbit(
+        launch(0, radius, position, direction, speed),
+        orbitHazards[mission],
+        forecastTime,
+        missions[mission].hold,
+      ),
+    [radius, position, direction, speed, mission, forecastTime],
+  )
   const config = useRef({
     radius,
     position,
@@ -105,9 +106,11 @@ export default function OrbitArchitectPage() {
       published = 0
     const world = new Image(),
       sprite = new Image(),
+      debris = new Image(),
       motion = matchMedia('(prefers-reduced-motion: reduce)')
     world.src = '/images/arcade/orbit/world.png'
     sprite.src = '/images/arcade/orbit/satellite.png'
+    debris.src = '/images/arcade/asteroid-escape-asteroid.png'
     const el = canvas.current!,
       ctx = el.getContext('2d')!
     let drawnConfig: typeof config.current | null = null
@@ -123,7 +126,7 @@ export default function OrbitArchitectPage() {
       })
     })
     resize.observe(el)
-    Promise.all([world.decode(), sprite.decode()])
+    Promise.all([world.decode(), sprite.decode(), debris.decode()])
       .then(() => {
         if (disposed) return
         setReady(true)
@@ -140,9 +143,14 @@ export default function OrbitArchitectPage() {
           }
           if (!cfg.paused && !s.won) {
             acc += dt
-            s.time += dt
             while (acc >= 1 / 120) {
-              const removed = advance(bodies.current, 1 / 120)
+              const removed = advance(
+                bodies.current,
+                1 / 120,
+                orbitHazards[cfg.mission],
+                s.time,
+              )
+              s.time += 1 / 120
               if (removed.size) {
                 bodies.current.forEach((b) => {
                   if (removed.has(b.id))
@@ -189,11 +197,15 @@ export default function OrbitArchitectPage() {
               return e.age < 1
             })
             if (now - published > 100) {
+              setForecastTime(s.time)
               setProgress(Math.min(s.held, missions[cfg.mission].hold))
               setLanes(occupiedLanes(bodies.current))
               published = now
             }
-          } else acc = 0
+          } else {
+            acc = 0
+            if (cfg.preview.launchTime !== s.time) setForecastTime(s.time)
+          }
           if (
             (!cfg.paused && !s.won) ||
             drawnConfig !== cfg ||
@@ -206,12 +218,15 @@ export default function OrbitArchitectPage() {
               world,
               sprite,
               bodies.current,
-              cfg.preview,
+              cfg.preview.points,
               cfg,
               s.effects,
               s.time,
               motion.matches,
               s.won,
+              orbitHazards[cfg.mission],
+              debris,
+              cfg.preview.reason !== null,
             )
             drawnConfig = cfg
             drawnHeight = el.height
@@ -274,6 +289,7 @@ export default function OrbitArchitectPage() {
       effects: [],
       time: 0,
     }
+    setForecastTime(0)
     setCount(0)
     setWon(false)
     setProgress(0)
@@ -388,6 +404,25 @@ export default function OrbitArchitectPage() {
               ? 'PAUSED'
               : 'Drag to position · Space to launch · P to pause'}
         </span>
+      </div>
+      <div className="game-hazards" aria-label="Debris forecast">
+        <span>
+          ⚠ {orbitHazards[mission].length} debris{' '}
+          {orbitHazards[mission].length === 1 ? 'hazard' : 'hazards'} · amber
+          routes
+        </span>
+        <span>
+          {won
+            ? 'Formation secured'
+            : preview.reason
+              ? `${preview.reason} predicted in ${preview.seconds.toFixed(1)}s — wait or adjust your launch.`
+              : `Launch now: clear of debris for ${m.hold}s.`}
+        </span>
+        <small>
+          Field time{' '}
+          <span data-testid="hazard-time">{forecastTime.toFixed(1)}</span>s ·
+          previews exclude other satellites
+        </small>
       </div>
       <div className="game-console">
         {error ? (
@@ -529,6 +564,15 @@ export default function OrbitArchitectPage() {
       </div>
       <details className="game-guide">
         <summary>Flight manual & mission rewards</summary>
+        <p>
+          Amber rings mark debris and dashed amber tracks show its route. D1 and
+          D2 move through launch lanes; later missions also contain a fixed
+          fragment. Wait for an opening, then launch. The preview forecasts
+          moving debris over the stability target duration, but does not predict
+          other satellites. Debris impacts lose satellites and count against
+          stars. Pausing freezes the entire field; reset restarts its timing.
+          Reduced motion keeps hazard movement visible because it affects play.
+        </p>
         <p>
           Tap or drag around the planet to place a circular launch; use the
           sliders for experimental paths. Launch with the button or focus the

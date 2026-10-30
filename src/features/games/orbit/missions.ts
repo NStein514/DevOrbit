@@ -1,3 +1,4 @@
+import type { Hazard } from '../shared/hazards.js'
 import type { Satellite } from './engine.js'
 export const missions = [
   {
@@ -37,3 +38,17 @@ export function missionReady(bodies: Satellite[], index: number) {
 export function missionStars(losses: number) {
   return losses === 0 ? 3 : losses <= 2 ? 2 : 1
 }
+
+// Routes cross the launch lanes; no route permanently blocks a lane.
+export const orbitHazards: Hazard[][] = [
+  [{ x: 0, y: 0, rx: 225, ry: 170, radius: 9, period: 28, phase: -1 }],
+  [
+    { x: 0, y: 0, rx: 225, ry: 170, radius: 10, period: 28, phase: -1 },
+    { x: 0, y: 0, rx: 155, ry: 220, radius: 9, period: 35, phase: 2 },
+  ],
+  [
+    { x: 0, y: 0, rx: 225, ry: 170, radius: 10, period: 28, phase: -1 },
+    { x: 0, y: 0, rx: 155, ry: 220, radius: 9, period: 35, phase: 2 },
+    { x: 0, y: -257, rx: 0, ry: 0, radius: 16, period: 0, phase: 0 },
+  ],
+]

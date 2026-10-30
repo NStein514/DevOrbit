@@ -1,3 +1,4 @@
+import { renderHazards } from '../shared/renderHazards'
 import { holes, type Comet, type Point, type Outcome } from './engine'
 import type { GolfSprites } from './art'
 export function render(
@@ -13,6 +14,7 @@ export function render(
   effectAge: number,
   previous: Point[],
   predictedOutcome: Outcome,
+  hazardTime: number,
 ) {
   const h = holes[index]
   ctx.fillStyle = '#06111e'
@@ -74,6 +76,7 @@ export function render(
     )
     ctx.restore()
   }
+  renderHazards(ctx, h.hazards, hazardTime, sprites.debris, reduced)
   ctx.save()
   ctx.translate(h.target.x, h.target.y)
   ctx.rotate(reduced ? 0 : time * 0.00025)
@@ -119,7 +122,12 @@ export function render(
     ctx.restore()
   }
   const b = comet ?? h.tee
-  if (outcome !== 'sunk' && outcome !== 'collision' && outcome !== 'escaped') {
+  if (
+    outcome !== 'sunk' &&
+    outcome !== 'collision' &&
+    outcome !== 'debris' &&
+    outcome !== 'escaped'
+  ) {
     ctx.save()
     ctx.translate(b.x, b.y)
     ctx.rotate(comet ? Math.atan2(comet.vy, comet.vx) : 0)
@@ -131,7 +139,7 @@ export function render(
   if (
     !reduced &&
     effectAge < 1.5 &&
-    (outcome === 'sunk' || outcome === 'collision')
+    (outcome === 'sunk' || outcome === 'collision' || outcome === 'debris')
   ) {
     ctx.save()
     ctx.globalCompositeOperation = 'lighter'

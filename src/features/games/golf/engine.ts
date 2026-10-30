@@ -1,3 +1,4 @@
+import { hitsHazard, type Hazard } from '../shared/hazards.js'
 export interface Point {
   x: number
   y: number
@@ -13,16 +14,22 @@ export interface Hole {
   tee: Point
   target: Point
   planets: Planet[]
+  hazards: Hazard[]
 }
 export interface Comet extends Point {
+  launchTime: number
   vx: number
   vy: number
   age: number
 }
-export type Outcome = 'flying' | 'sunk' | 'collision' | 'escaped' | 'timeout'
+export type Outcome =
+  'flying' | 'sunk' | 'collision' | 'debris' | 'escaped' | 'timeout'
 export const holes: Hole[] = [
   {
     name: 'First bend',
+    hazards: [
+      { x: 530, y: 250, rx: 12, ry: 140, radius: 18, period: 9, phase: 0 },
+    ],
     par: 2,
     tee: { x: 100, y: 410 },
     target: { x: 880, y: 150 },
@@ -30,6 +37,9 @@ export const holes: Hole[] = [
   },
   {
     name: 'Between worlds',
+    hazards: [
+      { x: 520, y: 275, rx: 20, ry: 145, radius: 20, period: 10, phase: 1 },
+    ],
     par: 3,
     tee: { x: 100, y: 280 },
     target: { x: 880, y: 280 },
@@ -40,6 +50,9 @@ export const holes: Hole[] = [
   },
   {
     name: 'The long arc',
+    hazards: [
+      { x: 560, y: 250, rx: 110, ry: 90, radius: 20, period: 12, phase: 0 },
+    ],
     par: 3,
     tee: { x: 100, y: 430 },
     target: { x: 870, y: 100 },
@@ -50,6 +63,10 @@ export const holes: Hole[] = [
   },
   {
     name: 'Binary drift',
+    hazards: [
+      { x: 540, y: 240, rx: 15, ry: 160, radius: 22, period: 10, phase: 2 },
+      { x: 780, y: 255, rx: 55, ry: 100, radius: 16, period: 13, phase: 0 },
+    ],
     par: 3,
     tee: { x: 100, y: 450 },
     target: { x: 880, y: 130 },
@@ -60,6 +77,10 @@ export const holes: Hole[] = [
   },
   {
     name: 'Needle thread',
+    hazards: [
+      { x: 600, y: 280, rx: 20, ry: 110, radius: 20, period: 8, phase: 0 },
+      { x: 290, y: 325, rx: 0, ry: 0, radius: 18, period: 0, phase: 0 },
+    ],
     par: 3,
     tee: { x: 100, y: 280 },
     target: { x: 900, y: 280 },
@@ -71,6 +92,10 @@ export const holes: Hole[] = [
   },
   {
     name: 'Event horizon',
+    hazards: [
+      { x: 520, y: 280, rx: 90, ry: 120, radius: 22, period: 10, phase: 1 },
+      { x: 800, y: 260, rx: 25, ry: 90, radius: 18, period: 7, phase: 0 },
+    ],
     par: 4,
     tee: { x: 100, y: 450 },
     target: { x: 890, y: 110 },
@@ -96,16 +121,24 @@ export function shotRating(strokes: number, par: number) {
         ? 'Right on par!'
         : `Hole complete · +${difference}`
 }
-export function shoot(hole: Hole, angle: number, power: number): Comet {
+export function shoot(
+  hole: Hole,
+  angle: number,
+  power: number,
+  launchTime = 0,
+): Comet {
   const a = (angle * Math.PI) / 180
   return {
     ...hole.tee,
+    launchTime,
     vx: Math.cos(a) * power,
     vy: Math.sin(a) * power,
     age: 0,
   }
 }
 export function advance(comet: Comet, hole: Hole, dt: number): Outcome {
+  const from = { x: comet.x, y: comet.y },
+    time = comet.launchTime + comet.age
   for (const p of [...hole.planets, { ...hole.target, mass: 65000 }]) {
     const dx = p.x - comet.x,
       dy = p.y - comet.y,
@@ -124,17 +157,25 @@ export function advance(comet: Comet, hole: Hole, dt: number): Outcome {
     )
   )
     return 'collision'
+  if (hole.hazards.some((h) => hitsHazard(from, comet, 4, h, time, dt)))
+    return 'debris'
   if (comet.x < -30 || comet.x > 1030 || comet.y < -30 || comet.y > 590)
     return 'escaped'
   return comet.age > 18 ? 'timeout' : 'flying'
 }
-export function prediction(hole: Hole, angle: number, power: number) {
-  const comet = shoot(hole, angle, power),
+export function prediction(
+  hole: Hole,
+  angle: number,
+  power: number,
+  launchTime = 0,
+) {
+  const comet = shoot(hole, angle, power, launchTime),
     points: Point[] = []
   let outcome: Outcome = 'flying'
   for (let i = 0; i < 2160 && outcome === 'flying'; i++) {
     outcome = advance(comet, hole, 1 / 120)
-    if (i % 8 === 0) points.push({ x: comet.x, y: comet.y })
+    if (i % 8 === 0 || outcome !== 'flying')
+      points.push({ x: comet.x, y: comet.y })
   }
-  return { points, outcome }
+  return { points, outcome, launchTime }
 }

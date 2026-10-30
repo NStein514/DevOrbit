@@ -4,6 +4,7 @@ export const golfArt = {
   blackHole: '/images/arcade/golf/black-hole.png',
   comet: '/images/arcade/golf/comet.png',
   spark: '/images/arcade/golf/spark.png',
+  debris: '/images/arcade/asteroid-escape-asteroid.png',
 }
 export type GolfSprites = Record<keyof typeof golfArt, HTMLImageElement>
 export async function loadGolfArt(): Promise<GolfSprites> {
